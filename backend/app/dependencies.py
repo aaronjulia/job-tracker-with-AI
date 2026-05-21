@@ -22,7 +22,9 @@ def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(
+            token, settings.JWT_SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
         user_id = payload.get("sub")
         if user_id is None:
             raise credentials_exception
@@ -33,3 +35,12 @@ def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
+
+def get_user_application(
+    application_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    # Implementation for fetching an application and verifying ownership
+    pass

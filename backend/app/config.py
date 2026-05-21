@@ -5,10 +5,9 @@ class Settings(BaseSettings):
     DB_URL: str
     JWT_SECRET_KEY: str
     ALGORITHM: str = "HS256"
-    TOKEN_EXPIRE_MINUTES: int = 60 * 24  * 7
+    TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7
 
     model_config = SettingsConfigDict(env_file=".env")
 
+
 settings = Settings()
-
-
