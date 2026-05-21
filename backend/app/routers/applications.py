@@ -5,84 +5,143 @@ from sqlalchemy import select
 import uuid
 
 from app.database import get_db
-from app.models import User, Application
+from app.models import Contact, Interaction, User, Application
 from app.dependencies import get_current_user, get_user_application
+from app.schemas import ApplicationOut, ApplicationCreate, ApplicationUpdate, ContactCreate, ContactOut, ContactUpdate, InteractionCreate, InteractionOut, InteractionUpdate
 
 router = APIRouter(prefix="/applications", tags=["applications"])
 
 # Application management endpoints
 
 
-@router.get("")
+@router.get("", response_model=list[ApplicationOut], status_code=status.HTTP_200_OK)
 def get_applications(
     current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
 ):
     # Implementation for fetching applications
-    pass
+    db_applications = db.execute(
+        select(Application).where(Application.user_id == current_user.id)).scalars().all()
+    return db_applications
 
 
-@router.get("/{application_id}")
+@router.get("/{application_id}", response_model=ApplicationOut, status_code=status.HTTP_200_OK)
 def get_application(
-    application_id: uuid.UUID,
+    application: Application = Depends(get_user_application),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     # Implementation for fetching a specific application
-    pass
+    return application
 
 
-@router.post("")
+@router.post("", response_model=ApplicationOut, status_code=status.HTTP_201_CREATED)
 def create_application(
-    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+    application_data: ApplicationCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     # Implementation for creating a new application
-    pass
+    db_application = Application(
+        user_id=current_user.id,
+        company=application_data.company,
+        role=application_data.role, 
+        status=application_data.status,
+        source=application_data.source,
+        job_url=application_data.job_url,
+        salary_min=application_data.salary_min,
+        salary_max=application_data.salary_max,
+        applied_at=application_data.applied_at
+    )   
+
+    db.add(db_application)
+    db.commit()
+    db.refresh(db_application)
+    return db_application
 
 
-@router.put("/{application_id}")
+@router.put("/{application_id}", response_model=ApplicationOut, status_code=status.HTTP_200_OK)
 def update_application(
-    application_id: uuid.UUID,
+    application_data: ApplicationUpdate,
+    application: Application = Depends(get_user_application),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     # Implementation for updating an existing application
-    pass
+    update_fields = application_data.model_dump(exclude_unset=True)
+    for field, value in update_fields.items():
+        setattr(application, field, value)
+
+    db.commit()
+    db.refresh(application)
+    return application
 
 
-@router.delete("/{application_id}")
+@router.delete("/{application_id}", response_model=dict, status_code=status.HTTP_200_OK)
 def delete_application(
-    application_id: uuid.UUID,
+    application: Application = Depends(get_user_application),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     # Implementation for deleting an application
-    pass
+
+    db.delete(application)
+    db.commit()
+    return {"detail": "Application deleted successfully"}
 
 
 # Contact management endpoints for applications
 
 
-@router.get("/{application_id}/contacts")
+@router.get("/{application_id}/contacts", response_model=list[ContactOut], status_code=status.HTTP_200_OK)
 def get_application_contacts(
     application: Application = Depends(get_user_application),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     # Implementation for fetching contacts related to an application
-    pass
+    contacts = application.contacts  
+    return contacts
 
+@router.get("/{application_id}/contacts/{contact_id}", response_model=ContactOut, status_code=status.HTTP_200_OK)
+def get_application_contact(
+    contact_id: uuid.UUID,
+    application: Application = Depends(get_user_application),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):  
+    # Implementation for fetching a specific contact related to an application
+    contact = db.get(Contact, contact_id)
+    if not contact or contact.application_id != application.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Contact not found"
+        )
+    return contact
 
-@router.post("/{application_id}/contacts")
+@router.post("/{application_id}/contacts", response_model=ContactOut, status_code=status.HTTP_201_CREATED)
 def add_application_contact(
+    contact_data: ContactCreate,
     application: Application = Depends(get_user_application),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     # Implementation for adding a contact to an application
-    pass
+
+    new_contact = Contact(
+        application_id=application.id,
+        name=contact_data.name,
+        title=contact_data.title,
+        email=contact_data.email,
+        linkedin_url=contact_data.linkedin_url
+        )
+
+    db.add(new_contact)
+    db.commit()
+    db.refresh(new_contact)
+    return new_contact
 
 
-@router.delete("/{application_id}/contacts/{contact_id}")
+@router.delete("/{application_id}/contacts/{contact_id}", response_model=dict, status_code=status.HTTP_200_OK)
 def delete_application_contact(
     contact_id: uuid.UUID,
     application: Application = Depends(get_user_application),
@@ -90,44 +149,92 @@ def delete_application_contact(
     db: Session = Depends(get_db),
 ):
     # Implementation for deleting a contact from an application
-    pass
+    contact = db.get(Contact, contact_id)
+    if not contact or contact.application_id != application.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Contact not found"
+        )  
+    db.delete(contact)
+    db.commit()
+    return {"detail": "Contact deleted successfully"}
 
 
-@router.put("/{application_id}/contacts/{contact_id}")
+@router.put("/{application_id}/contacts/{contact_id}", response_model=ContactOut, status_code=status.HTTP_200_OK)
 def update_application_contact(
     contact_id: uuid.UUID,
+    contact_data: ContactUpdate,
     application: Application = Depends(get_user_application),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     # Implementation for updating a contact related to an application
-    pass
+    contact = db.get(Contact, contact_id)
+    if not contact or contact.application_id != application.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Contact not found"
+        )
+    
+    update_fields = contact_data.model_dump(exclude_unset=True)
+    for field, value in update_fields.items():
+        setattr(contact, field, value)
+
+    db.commit()
+    db.refresh(contact)
+    return contact
 
 
 # Interaction management endpoints for applications
 
 
-@router.get("/{application_id}/interactions")
+@router.get("/{application_id}/interactions", response_model=list[InteractionOut], status_code=status.HTTP_200_OK)
 def get_application_interactions(
     application: Application = Depends(get_user_application),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Implementation for fetching interactions related to an application
-    pass
+    db_interactions = application.interactions
+
+    return db_interactions
+
+@router.get("/{application_id}/interactions/{interaction_id}", response_model=InteractionOut, status_code=status.HTTP_200_OK)
+def get_application_interaction( 
+    interaction_id: uuid.UUID,
+    application: Application = Depends(get_user_application),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    # Implementation for fetching a specific interaction related to an application
+    interaction = db.get(Interaction, interaction_id)
+    if not interaction or interaction.application_id != application.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Interaction not found"
+        )
+    return interaction
 
 
-@router.post("/{application_id}/interactions")
+@router.post("/{application_id}/interactions", response_model=dict, status_code=status.HTTP_201_CREATED)
 def add_application_interaction(
+    interaction_data: InteractionCreate,
     application: Application = Depends(get_user_application),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     # Implementation for adding an interaction to an application
-    pass
+    new_interaction = Interaction(
+        application_id=application.id,
+        type=interaction_data.type,
+        notes=interaction_data.notes
+    )
+    db.add(new_interaction)
+    db.commit()
+    db.refresh(new_interaction)
+    return {"detail": "Interaction added successfully"}
 
 
-@router.delete("/{application_id}/interactions/{interaction_id}")
+@router.delete("/{application_id}/interactions/{interaction_id}", response_model=dict, status_code=status.HTTP_200_OK)
 def delete_application_interaction(
     interaction_id: uuid.UUID,
     application: Application = Depends(get_user_application),
@@ -135,15 +242,35 @@ def delete_application_interaction(
     db: Session = Depends(get_db),
 ):
     # Implementation for deleting an interaction from an application
-    pass
+    interaction = db.get(Interaction, interaction_id)
+    if not interaction or interaction.application_id != application.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Interaction not found"
+        )
+    db.delete(interaction)
+    db.commit()
+    return {"detail": "Interaction deleted successfully"}
 
 
-@router.put("/{application_id}/interactions/{interaction_id}")
+@router.put("/{application_id}/interactions/{interaction_id}", response_model=dict, status_code=status.HTTP_200_OK)
 def update_application_interaction(
+    interaction_data: InteractionUpdate,
     interaction_id: uuid.UUID,
     application: Application = Depends(get_user_application),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     # Implementation for updating an interaction related to an application
-    pass
+    interaction = db.get(Interaction, interaction_id)
+    if not interaction or interaction.application_id != application.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Interaction not found"
+        ) 
+    update_fields = interaction_data.model_dump(exclude_unset=True)
+    for field, value in update_fields.items():
+        setattr(interaction, field, value)
+    db.commit()
+    db.refresh(interaction)
+    return {"detail": "Interaction updated successfully"}
