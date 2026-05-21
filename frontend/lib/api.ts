@@ -61,11 +61,24 @@ export async function login(email: string, password: string): Promise<string> {
     body,
   });
 
+  if (res.status === 401) {
+  localStorage.removeItem("token");
+  if (typeof window !== "undefined") {
+    window.location.href = "/login";
+  }
+  throw new Error("Session expired");
+}
+
   if (!res.ok) {
     throw new Error("Invalid email or password");
   }
 
   const data = await res.json();
   return data.access_token as string; // returns the JWT
+}
+
+export function logout() {
+  localStorage.removeItem("token");
+  window.location.href = "/login";
 }
 
