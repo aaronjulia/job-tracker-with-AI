@@ -4,15 +4,14 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { Application, ApplicationStatus } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 
 const STATUSES: ApplicationStatus[] = [
-  "wishlist",
-  "applied",
-  "interviewing",
-  "offer",
-  "accepted",
-  "rejected",
-  "withdrawn",
+  "wishlist", "applied", "interviewing", "offer", "accepted", "rejected", "withdrawn",
 ];
 
 export default function AddApplicationForm() {
@@ -22,13 +21,10 @@ export default function AddApplicationForm() {
   const [status, setStatus] = useState<ApplicationStatus>("wishlist");
 
   const createMutation = useMutation({
-    mutationFn: () =>
-      api.post<Application>("/applications", { company, role, status }),
+    mutationFn: () => api.post<Application>("/applications", { company, role, status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["applications"] });
-      setCompany("");
-      setRole("");
-      setStatus("wishlist");
+      setCompany(""); setRole(""); setStatus("wishlist");
     },
   });
 
@@ -38,46 +34,41 @@ export default function AddApplicationForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mb-6 space-y-3 rounded-lg border p-4">
-      <div className="flex gap-3">
-        <input
-          type="text"
-          placeholder="Company"
-          value={company}
-          onChange={(e) => setCompany(e.target.value)}
-          required
-          className="flex-1 rounded-md border px-3 py-2"
-        />
-        <input
-          type="text"
-          placeholder="Role"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          required
-          className="flex-1 rounded-md border px-3 py-2"
-        />
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value as ApplicationStatus)}
-          className="rounded-md border px-3 py-2 capitalize"
-        >
-          {STATUSES.map((s) => (
-            <option key={s} value={s} className="capitalize">{s}</option>
-          ))}
-        </select>
+    <form onSubmit={handleSubmit}
+      className="mb-6 flex flex-wrap items-end gap-3 rounded-xl border bg-card p-4">
+      <div className="min-w-[140px] flex-1 space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Company</label>
+        <Input value={company} onChange={(e) => setCompany(e.target.value)}
+          placeholder="Stripe" required />
       </div>
 
-      {createMutation.isError && (
-        <p className="text-sm text-red-600">{createMutation.error.message}</p>
-      )}
+      <div className="min-w-[140px] flex-1 space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Role</label>
+        <Input value={role} onChange={(e) => setRole(e.target.value)}
+          placeholder="Software Engineer" required />
+      </div>
 
-      <button
-        type="submit"
-        disabled={createMutation.isPending}
-        className="rounded-md bg-black px-4 py-2 text-white disabled:opacity-50"
-      >
-        {createMutation.isPending ? "Adding…" : "Add application"}
-      </button>
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Status</label>
+        <Select value={status} onValueChange={(v) => setStatus(v as ApplicationStatus)}>
+          <SelectTrigger className="w-[150px] capitalize">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {STATUSES.map((s) => (
+              <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Button type="submit" disabled={createMutation.isPending}>
+        {createMutation.isPending ? "Adding…" : "Add"}
+      </Button>
+
+      {createMutation.isError && (
+        <p className="w-full text-sm text-destructive">{createMutation.error.message}</p>
+      )}
     </form>
   );
 }

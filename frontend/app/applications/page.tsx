@@ -6,9 +6,14 @@ import type { Application } from "@/lib/types";
 import AddApplicationForm from "./AddApplicationForm";
 import { useRequireAuth } from "@/lib/useRequireAuth";
 import { logout } from "@/lib/api";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { StatusBadge } from "./StatusBadge";
+import { useRouter } from "next/navigation";
 
 export default function ApplicationsPage() {
-    const isAuthenticated = useRequireAuth();
+  const isAuthenticated = useRequireAuth();
+  const router = useRouter();
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["applications"],
     queryFn: () => api.get<Application[]>("/applications"),
@@ -20,37 +25,43 @@ export default function ApplicationsPage() {
   if (isLoading) return <p className="p-8">Loading…</p>;
   if (isError) return <p className="p-8 text-red-600">{error.message}</p>;
 
-  return (
-    <div className="mx-auto max-w-3xl p-8">
-      <h1 className="mb-6 text-2xl font-semibold">My Applications</h1>
-      <div className="flex justify-between">
-        <AddApplicationForm />
-
-      <button onClick={logout} className="text-sm text-gray-500 underline border border-gray-300 rounded-md py-2 px-4 hover:bg-gray-100">
+ return (
+  <div className="mx-auto max-w-3xl px-6 py-12">
+    <div className="mb-8 flex items-center justify-between">
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight">Applications</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Track every role in one place.
+        </p>
+      </div>
+      <Button variant="ghost" size="sm" onClick={logout}>
         Log out
-        </button>
-
-        </div>
-
-      {data && data.length === 0 ? (
-        <p className="text-gray-500">No applications yet.</p>
-      ) : (
-        <ul className="space-y-3">
-          {data?.map((app) => (
-            <li key={app.id} className="rounded-lg border p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">{app.company}</p>
-                  <p className="text-sm text-gray-600">{app.role}</p>
-                </div>
-                <span className="rounded-full bg-gray-100 px-3 py-1 text-xs capitalize">
-                  {app.status}
-                </span>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+      </Button>
     </div>
-  );
+
+    <AddApplicationForm />
+
+    {data && data.length === 0 ? (
+      <div className="rounded-xl border border-dashed py-16 text-center text-muted-foreground">
+        No applications yet — add your first one above.
+      </div>
+    ) : (
+      <div className="space-y-3">
+        {data?.map((app) => (
+          <Card
+            key={app.id}
+            className="flex items-center justify-between p-5 transition-shadow hover:shadow-md"
+            onClick={() => router.push(`/applications/${app.id}`)}
+          >
+            <div>
+              <p className="font-medium">{app.company}</p>
+              <p className="text-sm text-muted-foreground">{app.role}</p>
+            </div>
+            <StatusBadge status={app.status} />
+          </Card>
+        ))}
+      </div>
+    )}
+  </div>
+);
 }

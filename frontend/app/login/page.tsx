@@ -4,6 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { login } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,49 +28,35 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-sm space-y-4 rounded-lg border bg-white p-8 shadow-sm"
-      >
-        <h1 className="text-2xl font-semibold">Log in</h1>
-
-        <div className="space-y-1">
-          <label htmlFor="email" className="text-sm font-medium">Email</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full rounded-md border px-3 py-2"
-          />
+    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
+      <Card className="w-full max-w-sm p-8">
+        <div className="mb-6 space-y-1 text-center">
+          <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
+          <p className="text-sm text-muted-foreground">Log in to your job tracker</p>
         </div>
 
-        <div className="space-y-1">
-          <label htmlFor="password" className="text-sm font-medium">Password</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full rounded-md border px-3 py-2"
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" type="email" value={email}
+              onChange={(e) => setEmail(e.target.value)} required />
+          </div>
 
-        {loginMutation.isError && (
-          <p className="text-sm text-red-600">{loginMutation.error.message}</p>
-        )}
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" type="password" value={password}
+              onChange={(e) => setPassword(e.target.value)} required />
+          </div>
 
-        <button
-          type="submit"
-          disabled={loginMutation.isPending}
-          className="w-full rounded-md bg-black px-4 py-2 text-white disabled:opacity-50"
-        >
-          {loginMutation.isPending ? "Logging in..." : "Log in"}
-        </button>
-      </form>
+          {loginMutation.isError && (
+            <p className="text-sm text-destructive">{loginMutation.error.message}</p>
+          )}
+
+          <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+            {loginMutation.isPending ? "Logging in…" : "Log in"}
+          </Button>
+        </form>
+      </Card>
     </div>
   );
 }
