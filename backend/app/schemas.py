@@ -90,7 +90,6 @@ class InteractionCreate(BaseModel):
 class InteractionOut(BaseModel):
     id: uuid.UUID
     type: str
-    date: datetime
     notes: str | None = None
     occurred_at: datetime | None = None
     model_config = ConfigDict(from_attributes=True)

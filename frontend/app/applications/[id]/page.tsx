@@ -16,7 +16,7 @@ export default function ApplicationPage() {
     const { id } = useParams<{ id: string }>(); // Get the application ID from the URL query parameters
 
     const { data, isLoading, isError, error } = useQuery({
-        queryKey: ["applications"],
+        queryKey: ["application", id],
         queryFn: () => api.get<Application>(`/applications/${id}`),
     });
 
