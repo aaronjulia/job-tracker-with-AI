@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum as PyEnum
 
 from sqlalchemy import String, Text, Integer, DateTime, ForeignKey, Enum, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -72,6 +72,9 @@ class Application(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+    job_description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    extracted_requirements: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    generated_cover_letter: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     user: Mapped["User"] = relationship(back_populates="applications")
     contacts: Mapped[list["Contact"]] = relationship(
@@ -117,3 +120,6 @@ class Interaction(Base):
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     application: Mapped["Application"] = relationship(back_populates="interactions")
+
+
+

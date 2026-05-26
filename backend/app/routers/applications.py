@@ -4,10 +4,14 @@ from pytest import Session
 from sqlalchemy import select
 import uuid
 
+from fastapi import HTTPException
+from app.services import ai
+from app.schemas import CoverLetterRequest, CoverLetterResponse, ExtractedRequirements
+
 from app.database import get_db
 from app.models import Contact, Interaction, User, Application
 from app.dependencies import get_current_user, get_user_application
-from app.schemas import ApplicationOut, ApplicationCreate, ApplicationUpdate, ContactCreate, ContactOut, ContactUpdate, InteractionCreate, InteractionOut, InteractionUpdate
+from app.schemas import ApplicationOut, ApplicationCreate, ApplicationUpdate, ContactCreate, ContactOut, ContactUpdate, InteractionCreate, InteractionOut, InteractionUpdate, ParseJDRequest
 
 router = APIRouter(prefix="/applications", tags=["applications"])
 
@@ -274,3 +278,42 @@ def update_application_interaction(
     db.commit()
     db.refresh(interaction)
     return {"detail": "Interaction updated successfully"}
+
+@router.post("/{application_id}/parse-jd", response_model=ExtractedRequirements)
+def parse_jd(
+    body: ParseJDRequest,
+    application: Application = Depends(get_user_application),
+    db: Session = Depends(get_db),
+):
+    try:
+        requirements = ai.parse_job_description(body.job_description)
+    except ai.AIError:
+        raise HTTPException(status_code=502, detail="Could not parse job description")
+
+    application.job_description = body.job_description
+    application.extracted_requirements = requirements.model_dump()
+    db.commit()
+    db.refresh(application)
+    return requirements
+
+
+@router.post("/{application_id}/cover-letter", response_model=CoverLetterResponse)
+def cover_letter(
+    body: CoverLetterRequest,
+    application: Application = Depends(get_user_application),
+    db: Session = Depends(get_db),
+):
+    try:
+        letter = ai.generate_cover_letter(
+            company=application.company,
+            role=application.role,
+            requirements=application.extracted_requirements,
+            candidate_background=body.candidate_background,
+        )
+    except ai.AIError:
+        raise HTTPException(status_code=502, detail="Could not generate cover letter")
+
+    application.generated_cover_letter = letter
+    db.commit()
+    db.refresh(application)
+    return CoverLetterResponse(cover_letter=letter)

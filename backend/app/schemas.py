@@ -97,3 +97,21 @@ class InteractionOut(BaseModel):
 class InteractionUpdate(BaseModel):
     type: str | None = None
     notes: str | None = None
+
+class ExtractedRequirements(BaseModel):
+    required_skills: list[str] = []
+    preferred_skills: list[str] = []
+    years_experience: str | None = None
+    education: str | None = None
+    responsibilities: list[str] = []
+    keywords: list[str] = []
+
+class ParseJDRequest(BaseModel):
+    job_description: str
+
+
+class CoverLetterRequest(BaseModel):
+    candidate_background: str
+
+class CoverLetterResponse(BaseModel):
+    cover_letter: str
