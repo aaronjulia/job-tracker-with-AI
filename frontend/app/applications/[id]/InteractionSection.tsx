@@ -3,71 +3,169 @@
 import { api } from "@/lib/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Interaction } from "@/lib/types";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import ContactModal from "./ContactModal";
 import InteractionModal from "./InteractionModal";
+import {
+  MessageSquareIcon,
+  PlusIcon,
+  Trash2Icon,
+  StickyNoteIcon,
+  MailIcon,
+  PhoneIcon,
+  UsersIcon,
+  CornerUpRightIcon,
+} from "lucide-react";
+
+const TYPE_META: Record<string, { label: string; icon: typeof MailIcon }> = {
+  note: { label: "Note", icon: StickyNoteIcon },
+  email: { label: "Email", icon: MailIcon },
+  call: { label: "Call", icon: PhoneIcon },
+  interview: { label: "Interview", icon: UsersIcon },
+  follow_up: { label: "Follow up", icon: CornerUpRightIcon },
+};
 
 export default function InteractionSection({ applicationId }: { applicationId: string }) {
-    const { data, isLoading, isError, error } = useQuery({
-        queryKey: ["interactions", applicationId],
-        queryFn: () => api.get<Interaction[]>(`/applications/${applicationId}/interactions`),
-    });
-    const [modalOpen, setModalOpen] = useState(false);
-    const [editingInteraction, setEditingInteraction] = useState<Interaction | null>(null);
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["interactions", applicationId],
+    queryFn: () => api.get<Interaction[]>(`/applications/${applicationId}/interactions`),
+  });
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingInteraction, setEditingInteraction] = useState<Interaction | null>(null);
 
+  const queryClient = useQueryClient();
 
-    const queryClient = useQueryClient();
+  const deleteMutation = useMutation({
+    mutationFn: (interactionId: string) =>
+      api.delete(`/applications/${applicationId}/interactions/${interactionId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["interactions", applicationId] });
+    },
+  });
 
-    const deleteMutation = useMutation({
-        mutationFn: (interactionId: string) => api.delete(`/applications/${applicationId}/interactions/${interactionId}`),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["interactions", applicationId] });
-        },
-    });
+  return (
+    <section>
+      <InteractionModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        interaction={editingInteraction}
+        applicationId={applicationId}
+      />
 
-    if (isLoading) {
-        return <p className="p-4">Loading interactions…</p>;
-    }
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 font-heading text-lg font-semibold">
+          <MessageSquareIcon className="size-4.5 text-muted-foreground" />
+          Interactions
+          {data && data.length > 0 && (
+            <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+              {data.length}
+            </span>
+          )}
+        </h2>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            setEditingInteraction(null);
+            setModalOpen(true);
+          }}
+        >
+          <PlusIcon />
+          Add
+        </Button>
+      </div>
 
-    if (isError) {
-        return <p className="p-4 text-red-600">{error.message}</p>;
-    }
+      {isLoading ? (
+        <div className="h-16 animate-pulse rounded-xl bg-muted" />
+      ) : isError ? (
+        <p className="text-sm text-destructive">{error.message}</p>
+      ) : data && data.length === 0 ? (
+        <p className="rounded-xl border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
+          No interactions logged yet.
+        </p>
+      ) : (
+        <div className="relative space-y-2.5">
+          {data?.map((interaction) => {
+            const meta = TYPE_META[interaction.type] ?? {
+              label: interaction.type,
+              icon: MessageSquareIcon,
+            };
+            const Icon = meta.icon;
+            return (
+              <div
+                key={interaction.id}
+                className="flex items-start gap-3 rounded-xl border bg-card p-4 ring-1 ring-foreground/5 transition-shadow hover:shadow-sm"
+              >
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  <Icon className="size-4" />
+                </span>
 
+                <button
+                  type="button"
+                  className="min-w-0 flex-1 text-left"
+                  onClick={() => {
+                    setEditingInteraction(interaction);
+                    setModalOpen(true);
+                  }}
+                >
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="font-medium">{meta.label}</p>
+                    {interaction.occurred_at && (
+                      <p className="shrink-0 text-xs text-muted-foreground">
+                        {new Date(interaction.occurred_at).toLocaleString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    )}
+                  </div>
+                  {interaction.notes && (
+                    <p className="mt-0.5 text-sm text-muted-foreground">
+                      {interaction.notes}
+                    </p>
+                  )}
+                </button>
 
-    return (
-        <div>
-            <InteractionModal open={modalOpen} onClose={() => setModalOpen(false)} interaction={editingInteraction} applicationId={applicationId} />
-            <div className="mb-4 flex items-center gap-4">
-                <h2 className="text-xl font-semibold">Interactions</h2>
-                <Button onClick={() => {setEditingInteraction(null); setModalOpen(true);}} className="hover:bg-primary/80">Add Interaction</Button>
-            </div>
-            {data?.map(interaction => (
-                <div key={interaction.id} className="mb-2 rounded border p-3">
-                    <div onClick={() => {setEditingInteraction(interaction); setModalOpen(true);}}>
-                        <p><strong>Type:</strong> {interaction.type}</p>
-                        {interaction.notes && <p><strong>Notes:</strong> {interaction.notes}</p>}
-                        {interaction.occurred_at && <p><strong>Occurred At:</strong> {new Date(interaction.occurred_at).toLocaleString()}</p>}
-                    </div>
-                     <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="sm" className="text-destructive">Delete</Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogDescription> this is wraps brotha</AlertDialogDescription>
-                    <AlertDialogTitle>Are you sure you want to delete this interaction?</AlertDialogTitle>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-destructive">
+                      <Trash2Icon />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this interaction?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently remove this {meta.label.toLowerCase()}{" "}
+                        from the timeline. This can&apos;t be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => deleteMutation.mutate(interaction.id)}>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => deleteMutation.mutate(interaction.id)}>
                         Delete
-                        </AlertDialogAction>
+                      </AlertDialogAction>
                     </AlertDialogFooter>
-                    </AlertDialogContent>
-                    </AlertDialog>
-                </div>
-            ))}
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            );
+          })}
         </div>
-    );
+      )}
+    </section>
+  );
 }

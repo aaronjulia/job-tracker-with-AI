@@ -11,11 +11,19 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "./StatusBadge";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import {
+  BriefcaseIcon,
+  LogOutIcon,
+  PlusIcon,
+  XIcon,
+  ChevronRightIcon,
+  AlertCircleIcon,
+} from "lucide-react";
 
 export default function ApplicationsPage() {
   const isAuthenticated = useRequireAuth();
   const router = useRouter();
-  const [formVisible, setFormVisible] = useState(false)
+  const [formVisible, setFormVisible] = useState(false);
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["applications"],
     queryFn: () => api.get<Application[]>("/applications"),
@@ -23,55 +31,116 @@ export default function ApplicationsPage() {
 
   if (!isAuthenticated) return null; // or a loading state while redirecting
 
+  return (
+    <div className="flex flex-1 flex-col">
+      {/* Top bar */}
+      <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60">
+        <div className="mx-auto flex w-full max-w-3xl items-center justify-between px-6 py-3.5">
+          <div className="flex items-center gap-2 font-heading text-base font-semibold tracking-tight">
+            <span className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <BriefcaseIcon className="size-3.5" />
+            </span>
+            Job Tracker
+          </div>
+          <Button variant="ghost" size="sm" onClick={logout}>
+            <LogOutIcon />
+            Log out
+          </Button>
+        </div>
+      </header>
 
-  if (isLoading) return <p className="p-8">Loading…</p>;
-  if (isError) return <p className="p-8 text-red-600">{error.message}</p>;
-
- return (
-  <div className="mx-auto max-w-3xl px-6 py-12 w-full">
-    <div className="mb-8 flex items-center justify-between">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Applications</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Track every role in one place.
-        </p>
-      </div>
-      <Button variant="ghost" size="sm" onClick={logout}>
-        Log out
-      </Button>
-    </div>
-
-    <div className="flex justify-end">
-      <Button onClick={() => setFormVisible(!formVisible)} className="border">
-        {formVisible ? "hide" : "+ add application"}
-      </Button>
-    </div>
-
-    <div >
-        { formVisible && <AddApplicationForm />}
-    </div>
-
-    {data && data.length === 0 ? (
-      <div className="rounded-xl border border-dashed py-16 text-center text-muted-foreground">
-        No applications yet — add your first one above.
-      </div>
-    ) : (
-      <div className="space-y-3">
-        {data?.map((app) => (
-          <Card
-            key={app.id}
-            className="flex items-center justify-between p-5 transition-shadow hover:shadow-md"
-            onClick={() => router.push(`/applications/${app.id}`)}
+      <div className="mx-auto w-full max-w-3xl px-6 py-10">
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <div>
+            <h1 className="font-heading text-3xl font-semibold tracking-tight">
+              Applications
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {data && data.length > 0
+                ? `Tracking ${data.length} role${data.length === 1 ? "" : "s"}.`
+                : "Track every role in one place."}
+            </p>
+          </div>
+          <Button
+            onClick={() => setFormVisible(!formVisible)}
+            variant={formVisible ? "outline" : "default"}
+            size="lg"
           >
+            {formVisible ? (
+              <>
+                <XIcon />
+                Hide
+              </>
+            ) : (
+              <>
+                <PlusIcon />
+                Add application
+              </>
+            )}
+          </Button>
+        </div>
+
+        {formVisible && (
+          <div className="mb-8">
+            <AddApplicationForm onCreated={() => setFormVisible(false)} />
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className="space-y-3">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="h-[68px] animate-pulse rounded-xl bg-muted"
+              />
+            ))}
+          </div>
+        ) : isError ? (
+          <div className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+            <AlertCircleIcon className="size-4 shrink-0" />
+            {error.message}
+          </div>
+        ) : data && data.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
+            <span className="flex size-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
+              <BriefcaseIcon className="size-5" />
+            </span>
             <div>
-              <p className="font-medium">{app.company}</p>
-              <p className="text-sm text-muted-foreground">{app.role}</p>
+              <p className="font-medium">No applications yet</p>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Add your first role to start tracking.
+              </p>
             </div>
-            <StatusBadge status={app.status} />
-          </Card>
-        ))}
+            {!formVisible && (
+              <Button size="lg" onClick={() => setFormVisible(true)}>
+                <PlusIcon />
+                Add application
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {data?.map((app) => (
+              <Card
+                key={app.id}
+                className="group flex cursor-pointer flex-row items-center justify-between gap-4 p-5 transition-all hover:shadow-md hover:ring-foreground/20"
+                onClick={() => router.push(`/applications/${app.id}`)}
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{app.company}</p>
+                  <p className="truncate text-sm text-muted-foreground">
+                    {app.role}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-3">
+                  <StatusBadge status={app.status} />
+                  <ChevronRightIcon className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
-    )}
-  </div>
-);
+    </div>
+  );
 }

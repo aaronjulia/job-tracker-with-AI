@@ -1,112 +1,159 @@
-import { Contact, Interaction } from "@/lib/types";
-import { Dialog, DialogTrigger, DialogOverlay, DialogContent, DialogTitle, DialogDescription  } from "@/components/ui/dialog";
-import {useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { Interaction } from "@/lib/types";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { AlertCircleIcon } from "lucide-react";
 
 type Interactionprops = {
-    open: boolean;
-    interaction: null | Interaction;
-    applicationId: string;
-    onClose: () => void;
-}
+  open: boolean;
+  interaction: null | Interaction;
+  applicationId: string;
+  onClose: () => void;
+};
 
-{/*
-  class InteractionOut(BaseModel):
-    id: uuid.UUID
-    type: str
-    date: datetime
-    notes: str | None = None
-    occurred_at: datetime | None = None
-    model_config = ConfigDict(from_attributes=True)
-
-    class InteractionType(str, PyEnum):
-    note = "note"
-    email = "email"
-    call = "call"
-    interview = "interview"
-    follow_up = "follow_up"
-    */
-}
+const TYPES = [
+  { value: "note", label: "Note" },
+  { value: "email", label: "Email" },
+  { value: "call", label: "Call" },
+  { value: "interview", label: "Interview" },
+  { value: "follow_up", label: "Follow up" },
+];
 
 export default function InteractionModal({ open, interaction, applicationId, onClose }: Interactionprops) {
-    const [type, setType] = useState(interaction?.type || "");
-    const [notes, setNotes] = useState(interaction?.notes || "");
-    const [occurred_at, setOccurredAt] = useState(interaction?.occurred_at || "");
+  const [type, setType] = useState("note");
+  const [notes, setNotes] = useState("");
+  const [occurred_at, setOccurredAt] = useState("");
 
-    const queryClient = useQueryClient();
+  // Sync fields whenever the modal opens for a (possibly different) interaction.
+  useEffect(() => {
+    if (open) {
+      setType(interaction?.type || "note");
+      setNotes(interaction?.notes || "");
+      setOccurredAt(interaction?.occurred_at || "");
+    }
+  }, [open, interaction]);
 
-    const addMutation = useMutation({
-        mutationFn: () => api.post(`/applications/${applicationId}/interactions`,
-            {
-                type: type,
-                notes: notes,
-                occurred_at: occurred_at
-            }
-        ),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["interactions", applicationId] });
-            onClose();
-        }
-    });
+  const queryClient = useQueryClient();
 
-    const editMutation = useMutation({
-        mutationFn: () => api.put(`/applications/${applicationId}/interactions/${interaction?.id}`,
-            {
-                type: type,
-                notes: notes,
-                occurred_at: occurred_at
-            }
-        ),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["interactions", applicationId] });
-            onClose();
-        }
-    });
+  const onSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ["interactions", applicationId] });
+    onClose();
+  };
 
-    return (
-        <Dialog open={open} onOpenChange={(open) => {if (!open) onClose()}}>
-            <DialogTrigger />
-            <DialogOverlay className="fixed inset-0 bg-black/50" />
-            <DialogContent className="fixed top-1/2 left-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded bg-white p-6">
-            <DialogDescription className="text-sm text-gray-500">Use the form below to {interaction ? "edit" : "add"} an interaction for this application.</DialogDescription>
-                <DialogTitle>{interaction ? "Edit Interaction" : "Add Interaction"}</DialogTitle>
-                {/* Form fields for interaction details would go here */}
-                <form className="mt-4 space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Type</label>
-                        <select value={type} onChange={(e) => setType(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                            <option value="note">Note</option>
-                            <option value="email">Email</option>
-                            <option value="call">Call</option>
-                            <option value="interview">Interview</option>
-                            <option value="follow_up">Follow Up</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Notes</label>
-                        <input type="text" value={notes} onChange={(e) => setNotes(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Occurred At</label>
-                        <input type="datetime-local" value={occurred_at} onChange={(e) => setOccurredAt(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
-                    </div>
-                    <div className="flex justify-end space-x-2">
-                        <button type="submit" className="rounded bg-blue-600 px-4 py-2 text-sm text-white flex flex-auto items-center justify-center"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                if (interaction) {
-                                    editMutation.mutate();
-                                } else {
-                                    addMutation.mutate();
-                                }
-                            }}>
-                            {interaction ? "Save" : "Add"}
-                        </button>
-                    </div>
-                </form>
-                <button onClick={onClose}>Close</button>
-            </DialogContent>
-        </Dialog>
-    );
+  const addMutation = useMutation({
+    mutationFn: () =>
+      api.post(`/applications/${applicationId}/interactions`, {
+        type,
+        notes,
+        occurred_at,
+      }),
+    onSuccess,
+  });
+
+  const editMutation = useMutation({
+    mutationFn: () =>
+      api.put(`/applications/${applicationId}/interactions/${interaction?.id}`, {
+        type,
+        notes,
+        occurred_at,
+      }),
+    onSuccess,
+  });
+
+  const mutation = interaction ? editMutation : addMutation;
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{interaction ? "Edit interaction" : "Add interaction"}</DialogTitle>
+          <DialogDescription>
+            {interaction
+              ? "Update this entry in the timeline."
+              : "Log a note, email, call, or interview for this role."}
+          </DialogDescription>
+        </DialogHeader>
+
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            mutation.mutate();
+          }}
+        >
+          <div className="space-y-1.5">
+            <Label htmlFor="i-type">Type</Label>
+            <Select value={type} onValueChange={setType}>
+              <SelectTrigger id="i-type" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TYPES.map((t) => (
+                  <SelectItem key={t.value} value={t.value}>
+                    {t.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="i-occurred">Occurred at</Label>
+            <Input
+              id="i-occurred"
+              type="datetime-local"
+              value={occurred_at}
+              onChange={(e) => setOccurredAt(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="i-notes">Notes</Label>
+            <Textarea
+              id="i-notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="What happened?"
+              className="min-h-24"
+            />
+          </div>
+
+          {mutation.isError && (
+            <p className="flex items-center gap-1.5 text-sm text-destructive">
+              <AlertCircleIcon className="size-4" />
+              {mutation.error.message}
+            </p>
+          )}
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending ? "Saving…" : interaction ? "Save changes" : "Add interaction"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
 }

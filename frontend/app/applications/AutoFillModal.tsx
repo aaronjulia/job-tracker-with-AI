@@ -1,70 +1,89 @@
 import { ApplicationDraft } from "@/lib/types";
-import { Dialog, DialogTrigger, DialogOverlay, DialogContent, DialogTitle, DialogDescription  } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { api } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { SparklesIcon, AlertCircleIcon } from "lucide-react";
 
 type ModalProps = {
-    open: boolean;
-    onClose: () => void;
-    onAutofill: (data: ApplicationDraft) => void;
-}
+  open: boolean;
+  onClose: () => void;
+  onAutofill: (data: ApplicationDraft) => void;
+};
 
-export default function AutoFIllModal({open, onClose, onAutofill} : ModalProps) {
-    const [jd, setjd] = useState("");
+export default function AutoFIllModal({ open, onClose, onAutofill }: ModalProps) {
+  const [jd, setjd] = useState("");
 
-    const autofillMutation = useMutation({
-        mutationFn: () => api.post<ApplicationDraft>(`/applications/extract`,
-            {
-                job_description: jd,
-            }
-        ),
-        onSuccess: (data) => {
-            onAutofill(data);
-            onClose();
-        },
-    });
+  const autofillMutation = useMutation({
+    mutationFn: () =>
+      api.post<ApplicationDraft>(`/applications/extract`, {
+        job_description: jd,
+      }),
+    onSuccess: (data) => {
+      onAutofill(data);
+      onClose();
+    },
+  });
 
-    return (
-        <Dialog open={open} onOpenChange={() => onClose()}>
-            <DialogTrigger />
-            <DialogOverlay className="fixed inset-0 bg-black/50" />
-            <DialogContent className="fixed top-1/2 left-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded bg-white p-6">
-                <DialogDescription className="text-sm text-gray-500">autofill</DialogDescription>
-                <DialogTitle>autofill</DialogTitle>
-                <form className="mt-4 space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Job description</label>
-                        <input
-                            type="text"
-                            value={jd}
-                            onChange={(e) => setjd(e.target.value)}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        />
-                    </div>
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <SparklesIcon className="size-4" />
+            Autofill from job post
+          </DialogTitle>
+          <DialogDescription>
+            Paste the job description and we&apos;ll extract the company, role,
+            and requirements for you.
+          </DialogDescription>
+        </DialogHeader>
 
-                    {autofillMutation.isError && (
-                        <p className="text-sm text-red-600">{autofillMutation.error.message}</p>
-                    )}
+        <form
+          className="flex min-h-0 flex-1 flex-col gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            autofillMutation.mutate();
+          }}
+        >
+          <Label htmlFor="jd">Job description</Label>
+          <Textarea
+            id="jd"
+            value={jd}
+            onChange={(e) => setjd(e.target.value)}
+            placeholder="Paste the full job description here…"
+            className="min-h-40 flex-1 resize-none overflow-y-auto"
+            autoFocus
+          />
 
-                    <div className="flex justify-end space-x-2">
-                        <Button
-                            type="submit"
-                            disabled={autofillMutation.isPending}
-                            className="rounded bg-blue-600 px-4 py-2 text-sm text-white flex flex-auto items-center justify-center"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                autofillMutation.mutate();
-                            }}
-                        >
-                            {autofillMutation.isPending ? "Extracting…" : "Autofill"}
-                        </Button>
-                    </div>
-                </form>
-                <button onClick={() => onClose()}>Close</button>
-            </DialogContent>
-        </Dialog>
-    );
+          {autofillMutation.isError && (
+            <p className="flex items-center gap-1.5 text-sm text-destructive">
+              <AlertCircleIcon className="size-4" />
+              {autofillMutation.error.message}
+            </p>
+          )}
+
+          <DialogFooter className="mt-2">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={autofillMutation.isPending || !jd.trim()}>
+              {autofillMutation.isPending ? "Extracting…" : "Autofill"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
 }
