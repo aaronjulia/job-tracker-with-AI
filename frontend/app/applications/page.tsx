@@ -10,10 +10,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "./StatusBadge";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function ApplicationsPage() {
   const isAuthenticated = useRequireAuth();
   const router = useRouter();
+  const [formVisible, setFormVisible] = useState(false)
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["applications"],
     queryFn: () => api.get<Application[]>("/applications"),
@@ -26,7 +28,7 @@ export default function ApplicationsPage() {
   if (isError) return <p className="p-8 text-red-600">{error.message}</p>;
 
  return (
-  <div className="mx-auto max-w-3xl px-6 py-12">
+  <div className="mx-auto max-w-3xl px-6 py-12 w-full">
     <div className="mb-8 flex items-center justify-between">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Applications</h1>
@@ -39,7 +41,15 @@ export default function ApplicationsPage() {
       </Button>
     </div>
 
-    <AddApplicationForm />
+    <div className="flex justify-end">
+      <Button onClick={() => setFormVisible(!formVisible)} className="border">
+        {formVisible ? "hide" : "+ add application"}
+      </Button>
+    </div>
+
+    <div >
+        { formVisible && <AddApplicationForm />}
+    </div>
 
     {data && data.length === 0 ? (
       <div className="rounded-xl border border-dashed py-16 text-center text-muted-foreground">

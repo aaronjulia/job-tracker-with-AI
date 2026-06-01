@@ -1,3 +1,23 @@
+export type ExtractedRequirements = {
+    required_skills: string[]
+    preferred_skills: string[]
+    years_experience: string | null
+    education: string | null
+    responsibilities: string[]
+    keywords: string[]
+}
+
+export type ApplicationDraft = {
+  company: string | null;
+  role: string | null;
+  status: ApplicationStatus | null;
+  source: string | null;
+  job_url: string | null;
+  salary_min: number | null;
+  salary_max: number | null;
+  extracted_requirements: ExtractedRequirements | null;
+};
+
 export type ApplicationStatus =
   | "wishlist"
   | "applied"
@@ -19,6 +39,9 @@ export type Application = {
   applied_at: string | null;
   created_at: string;
   updated_at: string;
+  job_description: string | null;
+  extracted_requirements: ExtractedRequirements | null;
+  generated_cover_letter: string | null;
 };
 
 {/* Contact type based on the ContactOut Pydantic model in the backend

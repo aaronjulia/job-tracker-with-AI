@@ -39,6 +39,7 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+    background: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     applications: Mapped[list["Application"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"

@@ -3,7 +3,7 @@ from openai import OpenAI, OpenAIError
 from pydantic import ValidationError
 
 from app.config import settings
-from app.schemas import ExtractedRequirements
+from app.schemas import ApplicationDraft
 
 client = OpenAI(api_key=settings.OPENAI_API_KEY)
 MODEL = "gpt-4o-mini"
@@ -13,30 +13,35 @@ class AIError(Exception):
     """Raised when the AI call fails or returns something we can't use."""
 
 
-def parse_job_description(job_description: str) -> ExtractedRequirements:
+def extract_application_draft(job_description: str) -> ApplicationDraft:
     try:
         response = client.chat.completions.create(
             model=MODEL,
-            max_tokens=800,
+            max_tokens=900,
             temperature=0,
             response_format={"type": "json_object"},
             messages=[
                 {
                     "role": "system",
                     "content": (
-                        "You extract structured data from job descriptions. "
-                        "Return ONLY a JSON object with these keys: "
-                        "required_skills (string array), preferred_skills (string array), "
-                        "years_experience (string or null), education (string or null), "
-                        "responsibilities (string array), keywords (string array). "
-                        "Use an empty array or null for anything not present."
+                        "Extract structured data from a job posting. Return ONLY a JSON object "
+                        "with these keys:\n"
+                        "- company (string or null)\n"
+                        "- role (string or null)\n"
+                        "- salary_min (integer or null)\n"
+                        "- salary_max (integer or null)\n"
+                        "- requirements (object with: required_skills [string array], "
+                        "preferred_skills [string array], years_experience [string or null], "
+                        "education [string or null], responsibilities [string array], "
+                        "keywords [string array])\n"
+                        "Salaries are annual figures as plain integers (e.g. 90000), or null if "
+                        "not stated. Use null or empty arrays for anything not present in the posting."
                     ),
                 },
                 {"role": "user", "content": job_description},
             ],
         )
-        raw = response.choices[0].message.content
-        return ExtractedRequirements(**json.loads(raw))
+        return ApplicationDraft(**json.loads(response.choices[0].message.content))
     except OpenAIError as e:
         raise AIError("OpenAI request failed") from e
     except (json.JSONDecodeError, ValidationError) as e:

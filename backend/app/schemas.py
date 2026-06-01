@@ -25,6 +25,36 @@ class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
+class ExtractedRequirements(BaseModel):
+    required_skills: list[str] = []
+    preferred_skills: list[str] = []
+    years_experience: str | None = None
+    education: str | None = None
+    responsibilities: list[str] = []
+    keywords: list[str] = []
+
+class ApplicationDraft(BaseModel):
+    company: str | None = None
+    role: str | None = None
+    status: ApplicationStatus | None = None
+    source: str | None = None
+    job_url: str | None = None
+    salary_min: int | None = None
+    salary_max: int | None = None
+    extracted_requirements: ExtractedRequirements | None = None
+
+
+class ParseJDRequest(BaseModel):
+    job_description: str
+
+
+class CoverLetterRequest(BaseModel):
+    candidate_background: str
+
+class CoverLetterResponse(BaseModel):
+    cover_letter: str
+
+
 class ApplicationCreate(BaseModel):
     company: str
     role: str
@@ -34,6 +64,10 @@ class ApplicationCreate(BaseModel):
     salary_min: int | None = None
     salary_max: int | None = None
     applied_at: datetime | None = None
+    job_description: str | None = None
+    extracted_requirements: ExtractedRequirements | None = None
+    generated_cover_letter: str | None = None
+
 
 
 class ApplicationOut(BaseModel):
@@ -48,6 +82,9 @@ class ApplicationOut(BaseModel):
     applied_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
+    job_description: str | None = None
+    extracted_requirements: ExtractedRequirements | None = None
+    generated_cover_letter: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -97,21 +134,3 @@ class InteractionOut(BaseModel):
 class InteractionUpdate(BaseModel):
     type: str | None = None
     notes: str | None = None
-
-class ExtractedRequirements(BaseModel):
-    required_skills: list[str] = []
-    preferred_skills: list[str] = []
-    years_experience: str | None = None
-    education: str | None = None
-    responsibilities: list[str] = []
-    keywords: list[str] = []
-
-class ParseJDRequest(BaseModel):
-    job_description: str
-
-
-class CoverLetterRequest(BaseModel):
-    candidate_background: str
-
-class CoverLetterResponse(BaseModel):
-    cover_letter: str

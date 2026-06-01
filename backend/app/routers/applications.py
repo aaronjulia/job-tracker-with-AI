@@ -11,7 +11,7 @@ from app.schemas import CoverLetterRequest, CoverLetterResponse, ExtractedRequir
 from app.database import get_db
 from app.models import Contact, Interaction, User, Application
 from app.dependencies import get_current_user, get_user_application
-from app.schemas import ApplicationOut, ApplicationCreate, ApplicationUpdate, ContactCreate, ContactOut, ContactUpdate, InteractionCreate, InteractionOut, InteractionUpdate, ParseJDRequest
+from app.schemas import ApplicationOut, ApplicationCreate, ApplicationUpdate, ContactCreate, ContactOut, ContactUpdate, InteractionCreate, InteractionOut, InteractionUpdate, ParseJDRequest, ApplicationDraft
 
 router = APIRouter(prefix="/applications", tags=["applications"])
 
@@ -48,13 +48,16 @@ def create_application(
     db_application = Application(
         user_id=current_user.id,
         company=application_data.company,
-        role=application_data.role, 
+        role=application_data.role,
         status=application_data.status,
         source=application_data.source,
         job_url=application_data.job_url,
         salary_min=application_data.salary_min,
         salary_max=application_data.salary_max,
-        applied_at=application_data.applied_at
+        applied_at=application_data.applied_at,
+        job_description=application_data.job_description,
+        extracted_requirements=application_data.extracted_requirements.model_dump() if application_data.extracted_requirements else None,
+        generated_cover_letter=application_data.generated_cover_letter,
     )   
 
     db.add(db_application)
@@ -279,22 +282,18 @@ def update_application_interaction(
     db.refresh(interaction)
     return {"detail": "Interaction updated successfully"}
 
-@router.post("/{application_id}/parse-jd", response_model=ExtractedRequirements)
-def parse_jd(
+@router.post("/extract", response_model=ApplicationDraft)
+def extract_application(
     body: ParseJDRequest,
-    application: Application = Depends(get_user_application),
+    current_user: User = Depends(get_current_user), 
     db: Session = Depends(get_db),
 ):
     try:
-        requirements = ai.parse_job_description(body.job_description)
+        extracted = ai.extract_application_draft(body.job_description)
     except ai.AIError:
         raise HTTPException(status_code=502, detail="Could not parse job description")
-
-    application.job_description = body.job_description
-    application.extracted_requirements = requirements.model_dump()
-    db.commit()
-    db.refresh(application)
-    return requirements
+    
+    return extracted
 
 
 @router.post("/{application_id}/cover-letter", response_model=CoverLetterResponse)
