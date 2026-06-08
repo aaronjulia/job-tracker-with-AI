@@ -22,7 +22,12 @@ type Contactprops = {
   onClose: () => void;
 };
 
-export default function ContactModal({ open, contact, applicationId, onClose }: Contactprops) {
+export default function ContactModal({
+  open,
+  contact,
+  applicationId,
+  onClose,
+}: Contactprops) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [linkedin_url, setLinkedinUrl] = useState("");
@@ -31,10 +36,12 @@ export default function ContactModal({ open, contact, applicationId, onClose }: 
   // Sync fields whenever the modal opens for a (possibly different) contact.
   useEffect(() => {
     if (open) {
+      /* eslint-disable react-hooks/set-state-in-effect -- one-shot form reset when the dialog (re)opens */
       setName(contact?.name || "");
       setEmail(contact?.email || "");
       setLinkedinUrl(contact?.linkedin_url || "");
       setTitle(contact?.title || "");
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [open, contact]);
 
@@ -90,23 +97,47 @@ export default function ContactModal({ open, contact, applicationId, onClose }: 
         >
           <div className="space-y-1.5">
             <Label htmlFor="c-name">Name</Label>
-            <Input id="c-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Jane Doe" required autoFocus />
+            <Input
+              id="c-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Jane Doe"
+              required
+              autoFocus
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="c-email">Email</Label>
-            <Input id="c-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jane@company.com" />
+            <Input
+              id="c-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="jane@company.com"
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="c-linkedin">LinkedIn URL</Label>
-            <Input id="c-linkedin" type="url" value={linkedin_url} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/…" />
+            <Input
+              id="c-linkedin"
+              type="url"
+              value={linkedin_url}
+              onChange={(e) => setLinkedinUrl(e.target.value)}
+              placeholder="https://linkedin.com/in/…"
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="c-title">Title</Label>
-            <Input id="c-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Engineering Manager" />
+            <Input
+              id="c-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Engineering Manager"
+            />
           </div>
 
           {mutation.isError && (
-            <p className="flex items-center gap-1.5 text-sm text-destructive">
+            <p className="text-destructive flex items-center gap-1.5 text-sm">
               <AlertCircleIcon className="size-4" />
               {mutation.error.message}
             </p>
@@ -117,7 +148,11 @@ export default function ContactModal({ open, contact, applicationId, onClose }: 
               Cancel
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending ? "Saving…" : contact ? "Save changes" : "Add contact"}
+              {mutation.isPending
+                ? "Saving…"
+                : contact
+                  ? "Save changes"
+                  : "Add contact"}
             </Button>
           </DialogFooter>
         </form>

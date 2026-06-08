@@ -21,7 +21,11 @@ type ModalProps = {
   onAutofill: (data: ApplicationDraft) => void;
 };
 
-export default function AutoFIllModal({ open, onClose, onAutofill }: ModalProps) {
+export default function AutoFIllModal({
+  open,
+  onClose,
+  onAutofill,
+}: ModalProps) {
   const [jd, setjd] = useState("");
 
   const autofillMutation = useMutation({
@@ -68,7 +72,7 @@ export default function AutoFIllModal({ open, onClose, onAutofill }: ModalProps)
           />
 
           {autofillMutation.isError && (
-            <p className="flex items-center gap-1.5 text-sm text-destructive">
+            <p className="text-destructive flex items-center gap-1.5 text-sm">
               <AlertCircleIcon className="size-4" />
               {autofillMutation.error.message}
             </p>
@@ -78,7 +82,10 @@ export default function AutoFIllModal({ open, onClose, onAutofill }: ModalProps)
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={autofillMutation.isPending || !jd.trim()}>
+            <Button
+              type="submit"
+              disabled={autofillMutation.isPending || !jd.trim()}
+            >
               {autofillMutation.isPending ? "Extracting…" : "Autofill"}
             </Button>
           </DialogFooter>

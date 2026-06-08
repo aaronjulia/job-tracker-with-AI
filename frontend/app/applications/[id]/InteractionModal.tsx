@@ -38,7 +38,12 @@ const TYPES = [
   { value: "follow_up", label: "Follow up" },
 ];
 
-export default function InteractionModal({ open, interaction, applicationId, onClose }: Interactionprops) {
+export default function InteractionModal({
+  open,
+  interaction,
+  applicationId,
+  onClose,
+}: Interactionprops) {
   const [type, setType] = useState("note");
   const [notes, setNotes] = useState("");
   const [occurred_at, setOccurredAt] = useState("");
@@ -46,16 +51,20 @@ export default function InteractionModal({ open, interaction, applicationId, onC
   // Sync fields whenever the modal opens for a (possibly different) interaction.
   useEffect(() => {
     if (open) {
+      /* eslint-disable react-hooks/set-state-in-effect -- one-shot form reset when the dialog (re)opens */
       setType(interaction?.type || "note");
       setNotes(interaction?.notes || "");
       setOccurredAt(interaction?.occurred_at || "");
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [open, interaction]);
 
   const queryClient = useQueryClient();
 
   const onSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ["interactions", applicationId] });
+    queryClient.invalidateQueries({
+      queryKey: ["interactions", applicationId],
+    });
     onClose();
   };
 
@@ -71,11 +80,14 @@ export default function InteractionModal({ open, interaction, applicationId, onC
 
   const editMutation = useMutation({
     mutationFn: () =>
-      api.put(`/applications/${applicationId}/interactions/${interaction?.id}`, {
-        type,
-        notes,
-        occurred_at,
-      }),
+      api.put(
+        `/applications/${applicationId}/interactions/${interaction?.id}`,
+        {
+          type,
+          notes,
+          occurred_at,
+        },
+      ),
     onSuccess,
   });
 
@@ -85,7 +97,9 @@ export default function InteractionModal({ open, interaction, applicationId, onC
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{interaction ? "Edit interaction" : "Add interaction"}</DialogTitle>
+          <DialogTitle>
+            {interaction ? "Edit interaction" : "Add interaction"}
+          </DialogTitle>
           <DialogDescription>
             {interaction
               ? "Update this entry in the timeline."
@@ -138,7 +152,7 @@ export default function InteractionModal({ open, interaction, applicationId, onC
           </div>
 
           {mutation.isError && (
-            <p className="flex items-center gap-1.5 text-sm text-destructive">
+            <p className="text-destructive flex items-center gap-1.5 text-sm">
               <AlertCircleIcon className="size-4" />
               {mutation.error.message}
             </p>
@@ -149,7 +163,11 @@ export default function InteractionModal({ open, interaction, applicationId, onC
               Cancel
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending ? "Saving…" : interaction ? "Save changes" : "Add interaction"}
+              {mutation.isPending
+                ? "Saving…"
+                : interaction
+                  ? "Save changes"
+                  : "Add interaction"}
             </Button>
           </DialogFooter>
         </form>

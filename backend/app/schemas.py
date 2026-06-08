@@ -25,6 +25,7 @@ class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
+
 class ExtractedRequirements(BaseModel):
     required_skills: list[str] = []
     preferred_skills: list[str] = []
@@ -32,6 +33,7 @@ class ExtractedRequirements(BaseModel):
     education: str | None = None
     responsibilities: list[str] = []
     keywords: list[str] = []
+
 
 class ApplicationDraft(BaseModel):
     company: str | None = None
@@ -51,6 +53,7 @@ class ParseJDRequest(BaseModel):
 class CoverLetterRequest(BaseModel):
     candidate_background: str
 
+
 class CoverLetterResponse(BaseModel):
     cover_letter: str
 
@@ -67,7 +70,6 @@ class ApplicationCreate(BaseModel):
     job_description: str | None = None
     extracted_requirements: ExtractedRequirements | None = None
     generated_cover_letter: str | None = None
-
 
 
 class ApplicationOut(BaseModel):
@@ -88,6 +90,7 @@ class ApplicationOut(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
 class ApplicationUpdate(BaseModel):
     company: str | None = None
     role: str | None = None
@@ -97,6 +100,7 @@ class ApplicationUpdate(BaseModel):
     salary_min: int | None = None
     salary_max: int | None = None
     applied_at: datetime | None = None
+
 
 class ContactCreate(BaseModel):
     name: str
@@ -114,15 +118,18 @@ class ContactOut(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
 class ContactUpdate(BaseModel):
     name: str | None = None
     email: EmailStr | None = None
     linkedin_url: str | None = None
     title: str | None = None
 
+
 class InteractionCreate(BaseModel):
     type: str
     notes: str | None = None
+
 
 class InteractionOut(BaseModel):
     id: uuid.UUID
@@ -130,6 +137,7 @@ class InteractionOut(BaseModel):
     notes: str | None = None
     occurred_at: datetime | None = None
     model_config = ConfigDict(from_attributes=True)
+
 
 class InteractionUpdate(BaseModel):
     type: str | None = None

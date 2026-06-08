@@ -121,6 +121,3 @@ class Interaction(Base):
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     application: Mapped["Application"] = relationship(back_populates="interactions")
-
-
-

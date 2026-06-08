@@ -1,5 +1,3 @@
-
-
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -16,13 +14,13 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 
 @pytest.fixture
 def db_session():
-    Base.metadata.create_all(bind=engine)      # fresh tables before the test
+    Base.metadata.create_all(bind=engine)  # fresh tables before the test
     session = TestingSessionLocal()
     try:
         yield session
     finally:
         session.close()
-        Base.metadata.drop_all(bind=engine)    # wipe them after the test
+        Base.metadata.drop_all(bind=engine)  # wipe them after the test
 
 
 @pytest.fixture
@@ -30,6 +28,6 @@ def client(db_session):
     def override_get_db():
         yield db_session
 
-    app.dependency_overrides[get_db] = override_get_db   # endpoints now use the test DB
+    app.dependency_overrides[get_db] = override_get_db  # endpoints now use the test DB
     yield TestClient(app)
     app.dependency_overrides.clear()

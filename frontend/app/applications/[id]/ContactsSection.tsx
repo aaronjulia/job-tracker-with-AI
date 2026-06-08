@@ -25,10 +25,15 @@ import {
   Trash2Icon,
 } from "lucide-react";
 
-export default function ContactsSection({ applicationId }: { applicationId: string }) {
+export default function ContactsSection({
+  applicationId,
+}: {
+  applicationId: string;
+}) {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["contacts", applicationId],
-    queryFn: () => api.get<Contact[]>(`/applications/${applicationId}/contacts`),
+    queryFn: () =>
+      api.get<Contact[]>(`/applications/${applicationId}/contacts`),
   });
   const [modalOpen, setModalOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
@@ -62,11 +67,11 @@ export default function ContactsSection({ applicationId }: { applicationId: stri
       />
 
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="flex items-center gap-2 font-heading text-lg font-semibold">
-          <UsersIcon className="size-4.5 text-muted-foreground" />
+        <h2 className="font-heading flex items-center gap-2 text-lg font-semibold">
+          <UsersIcon className="text-muted-foreground size-4.5" />
           Contacts
           {data && data.length > 0 && (
-            <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+            <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
               {data.length}
             </span>
           )}
@@ -85,11 +90,11 @@ export default function ContactsSection({ applicationId }: { applicationId: stri
       </div>
 
       {isLoading ? (
-        <div className="h-16 animate-pulse rounded-xl bg-muted" />
+        <div className="bg-muted h-16 animate-pulse rounded-xl" />
       ) : isError ? (
-        <p className="text-sm text-destructive">{error.message}</p>
+        <p className="text-destructive text-sm">{error.message}</p>
       ) : data && data.length === 0 ? (
-        <p className="rounded-xl border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
+        <p className="text-muted-foreground rounded-xl border border-dashed px-4 py-8 text-center text-sm">
           No contacts yet.
         </p>
       ) : (
@@ -97,9 +102,9 @@ export default function ContactsSection({ applicationId }: { applicationId: stri
           {data?.map((contact) => (
             <div
               key={contact.id}
-              className="flex items-center gap-3 rounded-xl border bg-card p-4 ring-1 ring-foreground/5 transition-shadow hover:shadow-sm"
+              className="bg-card ring-foreground/5 flex items-center gap-3 rounded-xl border p-4 ring-1 transition-shadow hover:shadow-sm"
             >
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground">
+              <span className="bg-muted text-muted-foreground flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-medium">
                 {initials(contact.name)}
               </span>
 
@@ -113,11 +118,11 @@ export default function ContactsSection({ applicationId }: { applicationId: stri
               >
                 <p className="truncate font-medium">{contact.name}</p>
                 {contact.title && (
-                  <p className="truncate text-sm text-muted-foreground">
+                  <p className="text-muted-foreground truncate text-sm">
                     {contact.title}
                   </p>
                 )}
-                <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+                <div className="text-muted-foreground mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs">
                   {contact.email && (
                     <span className="inline-flex items-center gap-1">
                       <MailIcon className="size-3" />
@@ -132,7 +137,7 @@ export default function ContactsSection({ applicationId }: { applicationId: stri
                   href={contact.linkedin_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  className="text-muted-foreground hover:bg-muted hover:text-foreground flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors"
                   title="LinkedIn profile"
                 >
                   <LinkIcon className="size-4" />
@@ -141,7 +146,11 @@ export default function ContactsSection({ applicationId }: { applicationId: stri
 
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-destructive">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-muted-foreground hover:text-destructive"
+                  >
                     <Trash2Icon />
                   </Button>
                 </AlertDialogTrigger>
@@ -155,7 +164,9 @@ export default function ContactsSection({ applicationId }: { applicationId: stri
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => deleteMutation.mutate(contact.id)}>
+                    <AlertDialogAction
+                      onClick={() => deleteMutation.mutate(contact.id)}
+                    >
                       Delete
                     </AlertDialogAction>
                   </AlertDialogFooter>

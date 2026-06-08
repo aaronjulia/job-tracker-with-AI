@@ -12,6 +12,8 @@ export function useRequireAuth(): boolean {
     if (!token) {
       router.replace("/login");
     } else {
+      // localStorage is unavailable during SSR, so this auth check must run in an effect.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setChecked(true);
     }
   }, [router]);

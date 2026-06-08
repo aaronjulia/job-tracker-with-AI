@@ -43,9 +43,12 @@ async function request<T>(
 
 export const api = {
   get: <T>(path: string) => request<T>(path),
-  post: <T>(path: string, body: unknown) => request<T>(path, { method: "POST", body }),
-  patch: <T>(path: string, body: unknown) => request<T>(path, { method: "PATCH", body }),
-  put: <T>(path: string, body: unknown) => request<T>(path, { method: "PUT", body }),
+  post: <T>(path: string, body: unknown) =>
+    request<T>(path, { method: "POST", body }),
+  patch: <T>(path: string, body: unknown) =>
+    request<T>(path, { method: "PATCH", body }),
+  put: <T>(path: string, body: unknown) =>
+    request<T>(path, { method: "PUT", body }),
   delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
 };
 
@@ -62,12 +65,12 @@ export async function login(email: string, password: string): Promise<string> {
   });
 
   if (res.status === 401) {
-  localStorage.removeItem("token");
-  if (typeof window !== "undefined") {
-    window.location.href = "/login";
+    localStorage.removeItem("token");
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
+    throw new Error("Session expired");
   }
-  throw new Error("Session expired");
-}
 
   if (!res.ok) {
     throw new Error("Invalid email or password");
@@ -82,4 +85,3 @@ export function logout() {
   localStorage.removeItem("token");
   window.location.href = "/login";
 }
-

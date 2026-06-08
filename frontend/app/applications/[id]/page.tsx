@@ -58,7 +58,7 @@ export default function ApplicationPage() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60">
+      <header className="bg-background/80 supports-backdrop-filter:bg-background/60 sticky top-0 z-10 border-b backdrop-blur">
         <div className="mx-auto flex w-full max-w-3xl items-center px-6 py-3.5">
           <Button asChild variant="ghost" size="sm">
             <Link href="/applications">
@@ -72,11 +72,11 @@ export default function ApplicationPage() {
       <div className="mx-auto w-full max-w-3xl px-6 py-10">
         {isLoading ? (
           <div className="space-y-4">
-            <div className="h-9 w-1/2 animate-pulse rounded-lg bg-muted" />
-            <div className="h-40 animate-pulse rounded-xl bg-muted" />
+            <div className="bg-muted h-9 w-1/2 animate-pulse rounded-lg" />
+            <div className="bg-muted h-40 animate-pulse rounded-xl" />
           </div>
         ) : isError ? (
-          <div className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          <div className="border-destructive/30 bg-destructive/5 text-destructive flex items-center gap-2 rounded-xl border px-4 py-3 text-sm">
             <AlertCircleIcon className="size-4 shrink-0" />
             {error.message}
           </div>
@@ -87,7 +87,7 @@ export default function ApplicationPage() {
                 <h1 className="font-heading text-3xl font-semibold tracking-tight">
                   {data?.company}
                 </h1>
-                <p className="mt-1 text-muted-foreground">{data?.role}</p>
+                <p className="text-muted-foreground mt-1">{data?.role}</p>
               </div>
               {data && (
                 <div className="flex items-center gap-2">
@@ -104,7 +104,6 @@ export default function ApplicationPage() {
               )}
             </div>
 
-
             {data && (
               <EditApplicationDialog
                 open={isEditOpen}
@@ -118,7 +117,9 @@ export default function ApplicationPage() {
                 <Detail
                   icon={<CalendarIcon className="size-4" />}
                   label="Applied"
-                  value={data?.applied_at ? formatAppliedDate(data.applied_at) : "—"}
+                  value={
+                    data?.applied_at ? formatAppliedDate(data.applied_at) : "—"
+                  }
                 />
                 <Detail
                   icon={<CompassIcon className="size-4" />}
@@ -128,7 +129,12 @@ export default function ApplicationPage() {
                 <Detail
                   icon={<BanknoteIcon className="size-4" />}
                   label="Salary range"
-                  value={formatSalary(data?.salary_min ?? null, data?.salary_max ?? null) || "—"}
+                  value={
+                    formatSalary(
+                      data?.salary_min ?? null,
+                      data?.salary_max ?? null,
+                    ) || "—"
+                  }
                 />
                 <Detail
                   icon={<ExternalLinkIcon className="size-4" />}
@@ -139,7 +145,7 @@ export default function ApplicationPage() {
                         href={data.job_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 font-medium text-foreground underline-offset-4 hover:underline"
+                        className="text-foreground inline-flex items-center gap-1 font-medium underline-offset-4 hover:underline"
                       >
                         View posting
                         <ExternalLinkIcon className="size-3.5" />
@@ -154,8 +160,8 @@ export default function ApplicationPage() {
 
             {data?.extracted_requirements && (
               <section className="mb-8">
-                <h2 className="mb-3 flex items-center gap-2 font-heading text-lg font-semibold">
-                  <FileTextIcon className="size-4.5 text-muted-foreground" />
+                <h2 className="font-heading mb-3 flex items-center gap-2 text-lg font-semibold">
+                  <FileTextIcon className="text-muted-foreground size-4.5" />
                   Job Details
                 </h2>
                 <Card className="space-y-6 p-6">
@@ -168,7 +174,9 @@ export default function ApplicationPage() {
                     <Detail
                       icon={<BriefcaseIcon className="size-4" />}
                       label="Experience"
-                      value={data.extracted_requirements.years_experience || "—"}
+                      value={
+                        data.extracted_requirements.years_experience || "—"
+                      }
                     />
                   </dl>
 
@@ -185,16 +193,18 @@ export default function ApplicationPage() {
 
                   {data.extracted_requirements.responsibilities.length > 0 && (
                     <div>
-                      <h3 className="mb-2 text-xs font-medium text-muted-foreground">
+                      <h3 className="text-muted-foreground mb-2 text-xs font-medium">
                         Responsibilities
                       </h3>
                       <ul className="space-y-1.5">
-                        {data.extracted_requirements.responsibilities.map((item, i) => (
-                          <li key={i} className="flex gap-2.5 text-sm">
-                            <span className="mt-2 size-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
+                        {data.extracted_requirements.responsibilities.map(
+                          (item, i) => (
+                            <li key={i} className="flex gap-2.5 text-sm">
+                              <span className="bg-muted-foreground/40 mt-2 size-1.5 shrink-0 rounded-full" />
+                              <span>{item}</span>
+                            </li>
+                          ),
+                        )}
                       </ul>
                     </div>
                   )}
@@ -224,11 +234,11 @@ function Detail({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+      <span className="bg-muted text-muted-foreground mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg">
         {icon}
       </span>
       <div className="min-w-0">
-        <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+        <dt className="text-muted-foreground text-xs font-medium">{label}</dt>
         <dd className="mt-0.5 truncate text-sm font-medium">{value}</dd>
       </div>
     </div>
@@ -247,7 +257,9 @@ function SkillGroup({
   if (!items || items.length === 0) return null;
   return (
     <div>
-      <h3 className="mb-2 text-xs font-medium text-muted-foreground">{label}</h3>
+      <h3 className="text-muted-foreground mb-2 text-xs font-medium">
+        {label}
+      </h3>
       <div className="flex flex-wrap gap-1.5">
         {items.map((item, i) => (
           <Badge key={i} variant={variant} className="h-6 px-2.5">

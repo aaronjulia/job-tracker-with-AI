@@ -1,11 +1,11 @@
 export type ExtractedRequirements = {
-    required_skills: string[]
-    preferred_skills: string[]
-    years_experience: string | null
-    education: string | null
-    responsibilities: string[]
-    keywords: string[]
-}
+  required_skills: string[];
+  preferred_skills: string[];
+  years_experience: string | null;
+  education: string | null;
+  responsibilities: string[];
+  keywords: string[];
+};
 
 export type ApplicationDraft = {
   company: string | null;
@@ -44,7 +44,8 @@ export type Application = {
   generated_cover_letter: string | null;
 };
 
-{/* Contact type based on the ContactOut Pydantic model in the backend
+{
+  /* Contact type based on the ContactOut Pydantic model in the backend
 class ContactOut(BaseModel):
     id: uuid.UUID
     name: str
@@ -62,9 +63,10 @@ export type Contact = {
   email: string | null;
   linkedin_url: string | null;
   title: string | null;
-}
+};
 
-{/*
+{
+  /*
   class InteractionOut(BaseModel):
     id: uuid.UUID
     type: str
@@ -81,4 +83,4 @@ export type Interaction = {
   date: Date;
   notes: string | null;
   occurred_at: string | null;
-}
+};

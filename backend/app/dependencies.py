@@ -47,7 +47,6 @@ def get_user_application(
     application = db.get(Application, application_id)
     if not application or application.user_id != current_user.id:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Application not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Application not found"
         )
     return application

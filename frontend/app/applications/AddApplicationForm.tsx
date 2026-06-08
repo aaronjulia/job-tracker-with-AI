@@ -3,21 +3,39 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import type { Application, ApplicationStatus, ExtractedRequirements } from "@/lib/types";
+import type {
+  Application,
+  ApplicationStatus,
+  ExtractedRequirements,
+} from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import AutoFIllModal from "./AutoFillModal";
 import { SparklesIcon, AlertCircleIcon } from "lucide-react";
 
 const STATUSES: ApplicationStatus[] = [
-  "wishlist", "applied", "interviewing", "offer", "accepted", "rejected", "withdrawn",
+  "wishlist",
+  "applied",
+  "interviewing",
+  "offer",
+  "accepted",
+  "rejected",
+  "withdrawn",
 ];
 
-export default function AddApplicationForm({ onCreated }: { onCreated?: () => void }) {
+export default function AddApplicationForm({
+  onCreated,
+}: {
+  onCreated?: () => void;
+}) {
   const queryClient = useQueryClient();
   const [company, setCompany] = useState("");
   const [role, setRole] = useState("");
@@ -28,11 +46,12 @@ export default function AddApplicationForm({ onCreated }: { onCreated?: () => vo
   const [salary_max, setSalaryMax] = useState("");
   const [applied_at, setAppliedAt] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
-  const [requirements, setRequirements] = useState<ExtractedRequirements | null>();
+  const [requirements, setRequirements] =
+    useState<ExtractedRequirements | null>();
 
   const createMutation = useMutation({
-    mutationFn: () => api.post<Application>("/applications",
-      {
+    mutationFn: () =>
+      api.post<Application>("/applications", {
         company,
         role,
         status,
@@ -45,7 +64,15 @@ export default function AddApplicationForm({ onCreated }: { onCreated?: () => vo
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["applications"] });
-      setCompany(""); setRole(""); setStatus("wishlist"); setSource(""); setJobUrl(""); setSalaryMin(""); setSalaryMax(""); setAppliedAt(""); setRequirements(null);
+      setCompany("");
+      setRole("");
+      setStatus("wishlist");
+      setSource("");
+      setJobUrl("");
+      setSalaryMin("");
+      setSalaryMax("");
+      setAppliedAt("");
+      setRequirements(null);
       onCreated?.();
     },
   });
@@ -76,85 +103,130 @@ export default function AddApplicationForm({ onCreated }: { onCreated?: () => vo
 
       <form
         onSubmit={handleSubmit}
-        className="rounded-xl border bg-card p-5 ring-1 ring-foreground/5"
+        className="bg-card ring-foreground/5 rounded-xl border p-5 ring-1"
       >
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="font-heading text-base font-medium">New application</h2>
-        <Button type="button" variant="outline" size="sm" onClick={() => setModalVisible(true)}>
-          <SparklesIcon />
-          Autofill from job post
-        </Button>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label htmlFor="af-company">Company</Label>
-          <Input id="af-company" value={company} onChange={(e) => setCompany(e.target.value)}
-            placeholder="Stripe" required />
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="font-heading text-base font-medium">
+            New application
+          </h2>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setModalVisible(true)}
+          >
+            <SparklesIcon />
+            Autofill from job post
+          </Button>
         </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="af-role">Role</Label>
-          <Input id="af-role" value={role} onChange={(e) => setRole(e.target.value)}
-            placeholder="Software Engineer" required />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="af-company">Company</Label>
+            <Input
+              id="af-company"
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+              placeholder="Stripe"
+              required
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="af-role">Role</Label>
+            <Input
+              id="af-role"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              placeholder="Software Engineer"
+              required
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="af-status">Status</Label>
+            <Select
+              value={status}
+              onValueChange={(v) => setStatus(v as ApplicationStatus)}
+            >
+              <SelectTrigger id="af-status" className="w-full capitalize">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUSES.map((s) => (
+                  <SelectItem key={s} value={s} className="capitalize">
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="af-source">Source</Label>
+            <Input
+              id="af-source"
+              value={source}
+              onChange={(e) => setSource(e.target.value)}
+              placeholder="LinkedIn"
+            />
+          </div>
+
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label htmlFor="af-url">Job URL</Label>
+            <Input
+              id="af-url"
+              value={job_url}
+              onChange={(e) => setJobUrl(e.target.value)}
+              placeholder="https://example.com/job"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="af-min">Salary min</Label>
+            <Input
+              id="af-min"
+              inputMode="numeric"
+              value={salary_min}
+              onChange={(e) => setSalaryMin(e.target.value)}
+              placeholder="50000"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="af-max">Salary max</Label>
+            <Input
+              id="af-max"
+              inputMode="numeric"
+              value={salary_max}
+              onChange={(e) => setSalaryMax(e.target.value)}
+              placeholder="100000"
+            />
+          </div>
+
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label htmlFor="af-applied">Applied at</Label>
+            <Input
+              id="af-applied"
+              type="date"
+              value={applied_at}
+              onChange={(e) => setAppliedAt(e.target.value)}
+            />
+          </div>
         </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="af-status">Status</Label>
-          <Select value={status} onValueChange={(v) => setStatus(v as ApplicationStatus)}>
-            <SelectTrigger id="af-status" className="w-full capitalize">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUSES.map((s) => (
-                <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {createMutation.isError && (
+          <p className="text-destructive mt-4 flex items-center gap-1.5 text-sm">
+            <AlertCircleIcon className="size-4" />
+            {createMutation.error.message}
+          </p>
+        )}
+
+        <div className="mt-5 flex justify-end gap-2 border-t pt-4">
+          <Button type="submit" size="lg" disabled={createMutation.isPending}>
+            {createMutation.isPending ? "Adding…" : "Add application"}
+          </Button>
         </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="af-source">Source</Label>
-          <Input id="af-source" value={source} onChange={(e) => setSource(e.target.value)}
-            placeholder="LinkedIn" />
-        </div>
-
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="af-url">Job URL</Label>
-          <Input id="af-url" value={job_url} onChange={(e) => setJobUrl(e.target.value)}
-            placeholder="https://example.com/job" />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="af-min">Salary min</Label>
-          <Input id="af-min" inputMode="numeric" value={salary_min} onChange={(e) => setSalaryMin(e.target.value)}
-            placeholder="50000" />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="af-max">Salary max</Label>
-          <Input id="af-max" inputMode="numeric" value={salary_max} onChange={(e) => setSalaryMax(e.target.value)}
-            placeholder="100000" />
-        </div>
-
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="af-applied">Applied at</Label>
-          <Input id="af-applied" type="date" value={applied_at} onChange={(e) => setAppliedAt(e.target.value)} />
-        </div>
-      </div>
-
-      {createMutation.isError && (
-        <p className="mt-4 flex items-center gap-1.5 text-sm text-destructive">
-          <AlertCircleIcon className="size-4" />
-          {createMutation.error.message}
-        </p>
-      )}
-
-      <div className="mt-5 flex justify-end gap-2 border-t pt-4">
-        <Button type="submit" size="lg" disabled={createMutation.isPending}>
-          {createMutation.isPending ? "Adding…" : "Add application"}
-        </Button>
-      </div>
       </form>
     </>
   );

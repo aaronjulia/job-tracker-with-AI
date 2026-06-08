@@ -36,21 +36,31 @@ const TYPE_META: Record<string, { label: string; icon: typeof MailIcon }> = {
   follow_up: { label: "Follow up", icon: CornerUpRightIcon },
 };
 
-export default function InteractionSection({ applicationId }: { applicationId: string }) {
+export default function InteractionSection({
+  applicationId,
+}: {
+  applicationId: string;
+}) {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["interactions", applicationId],
-    queryFn: () => api.get<Interaction[]>(`/applications/${applicationId}/interactions`),
+    queryFn: () =>
+      api.get<Interaction[]>(`/applications/${applicationId}/interactions`),
   });
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingInteraction, setEditingInteraction] = useState<Interaction | null>(null);
+  const [editingInteraction, setEditingInteraction] =
+    useState<Interaction | null>(null);
 
   const queryClient = useQueryClient();
 
   const deleteMutation = useMutation({
     mutationFn: (interactionId: string) =>
-      api.delete(`/applications/${applicationId}/interactions/${interactionId}`),
+      api.delete(
+        `/applications/${applicationId}/interactions/${interactionId}`,
+      ),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["interactions", applicationId] });
+      queryClient.invalidateQueries({
+        queryKey: ["interactions", applicationId],
+      });
     },
   });
 
@@ -64,11 +74,11 @@ export default function InteractionSection({ applicationId }: { applicationId: s
       />
 
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="flex items-center gap-2 font-heading text-lg font-semibold">
-          <MessageSquareIcon className="size-4.5 text-muted-foreground" />
+        <h2 className="font-heading flex items-center gap-2 text-lg font-semibold">
+          <MessageSquareIcon className="text-muted-foreground size-4.5" />
           Interactions
           {data && data.length > 0 && (
-            <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+            <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
               {data.length}
             </span>
           )}
@@ -87,11 +97,11 @@ export default function InteractionSection({ applicationId }: { applicationId: s
       </div>
 
       {isLoading ? (
-        <div className="h-16 animate-pulse rounded-xl bg-muted" />
+        <div className="bg-muted h-16 animate-pulse rounded-xl" />
       ) : isError ? (
-        <p className="text-sm text-destructive">{error.message}</p>
+        <p className="text-destructive text-sm">{error.message}</p>
       ) : data && data.length === 0 ? (
-        <p className="rounded-xl border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
+        <p className="text-muted-foreground rounded-xl border border-dashed px-4 py-8 text-center text-sm">
           No interactions logged yet.
         </p>
       ) : (
@@ -105,9 +115,9 @@ export default function InteractionSection({ applicationId }: { applicationId: s
             return (
               <div
                 key={interaction.id}
-                className="flex items-start gap-3 rounded-xl border bg-card p-4 ring-1 ring-foreground/5 transition-shadow hover:shadow-sm"
+                className="bg-card ring-foreground/5 flex items-start gap-3 rounded-xl border p-4 ring-1 transition-shadow hover:shadow-sm"
               >
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                <span className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
                   <Icon className="size-4" />
                 </span>
 
@@ -122,18 +132,21 @@ export default function InteractionSection({ applicationId }: { applicationId: s
                   <div className="flex items-baseline justify-between gap-2">
                     <p className="font-medium">{meta.label}</p>
                     {interaction.occurred_at && (
-                      <p className="shrink-0 text-xs text-muted-foreground">
-                        {new Date(interaction.occurred_at).toLocaleString(undefined, {
-                          month: "short",
-                          day: "numeric",
-                          hour: "numeric",
-                          minute: "2-digit",
-                        })}
+                      <p className="text-muted-foreground shrink-0 text-xs">
+                        {new Date(interaction.occurred_at).toLocaleString(
+                          undefined,
+                          {
+                            month: "short",
+                            day: "numeric",
+                            hour: "numeric",
+                            minute: "2-digit",
+                          },
+                        )}
                       </p>
                     )}
                   </div>
                   {interaction.notes && (
-                    <p className="mt-0.5 text-sm text-muted-foreground">
+                    <p className="text-muted-foreground mt-0.5 text-sm">
                       {interaction.notes}
                     </p>
                   )}
@@ -141,21 +154,30 @@ export default function InteractionSection({ applicationId }: { applicationId: s
 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-destructive">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-muted-foreground hover:text-destructive"
+                    >
                       <Trash2Icon />
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Delete this interaction?</AlertDialogTitle>
+                      <AlertDialogTitle>
+                        Delete this interaction?
+                      </AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will permanently remove this {meta.label.toLowerCase()}{" "}
-                        from the timeline. This can&apos;t be undone.
+                        This will permanently remove this{" "}
+                        {meta.label.toLowerCase()} from the timeline. This
+                        can&apos;t be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => deleteMutation.mutate(interaction.id)}>
+                      <AlertDialogAction
+                        onClick={() => deleteMutation.mutate(interaction.id)}
+                      >
                         Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>

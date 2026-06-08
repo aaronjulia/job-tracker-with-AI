@@ -46,7 +46,7 @@ def extract_application_draft(job_description: str) -> ApplicationDraft:
         raise AIError("OpenAI request failed") from e
     except (json.JSONDecodeError, ValidationError) as e:
         raise AIError("AI returned an unparseable response") from e
-    
+
 
 def generate_cover_letter(
     company: str,

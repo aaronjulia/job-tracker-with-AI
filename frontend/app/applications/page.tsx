@@ -46,7 +46,6 @@ export default function ApplicationsPage() {
   const deleteMutation = useMutation({
     mutationFn: (appId: string) => api.delete(`/applications/${appId}`),
     onSuccess: () => {
-
       queryClient.invalidateQueries({ queryKey: ["applications"] });
       router.refresh(); // Refresh the list after deletion
     },
@@ -57,10 +56,10 @@ export default function ApplicationsPage() {
   return (
     <div className="flex flex-1 flex-col">
       {/* Top bar */}
-      <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60">
+      <header className="bg-background/80 supports-backdrop-filter:bg-background/60 sticky top-0 z-10 border-b backdrop-blur">
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between px-6 py-3.5">
-          <div className="flex items-center gap-2 font-heading text-base font-semibold tracking-tight">
-            <span className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <div className="font-heading flex items-center gap-2 text-base font-semibold tracking-tight">
+            <span className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-lg">
               <BriefcaseIcon className="size-3.5" />
             </span>
             Job Tracker
@@ -78,7 +77,7 @@ export default function ApplicationsPage() {
             <h1 className="font-heading text-3xl font-semibold tracking-tight">
               Applications
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="text-muted-foreground mt-1 text-sm">
               {data && data.length > 0
                 ? `Tracking ${data.length} role${data.length === 1 ? "" : "s"}.`
                 : "Track every role in one place."}
@@ -114,23 +113,23 @@ export default function ApplicationsPage() {
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="h-[68px] animate-pulse rounded-xl bg-muted"
+                className="bg-muted h-[68px] animate-pulse rounded-xl"
               />
             ))}
           </div>
         ) : isError ? (
-          <div className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          <div className="border-destructive/30 bg-destructive/5 text-destructive flex items-center gap-2 rounded-xl border px-4 py-3 text-sm">
             <AlertCircleIcon className="size-4 shrink-0" />
             {error.message}
           </div>
         ) : data && data.length === 0 ? (
           <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
-            <span className="flex size-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
+            <span className="bg-muted text-muted-foreground flex size-11 items-center justify-center rounded-full">
               <BriefcaseIcon className="size-5" />
             </span>
             <div>
               <p className="font-medium">No applications yet</p>
-              <p className="mt-0.5 text-sm text-muted-foreground">
+              <p className="text-muted-foreground mt-0.5 text-sm">
                 Add your first role to start tracking.
               </p>
             </div>
@@ -146,12 +145,12 @@ export default function ApplicationsPage() {
             {data?.map((app) => (
               <Card
                 key={app.id}
-                className="group flex cursor-pointer flex-row items-center justify-between gap-4 p-5 transition-all hover:shadow-md hover:ring-foreground/20"
+                className="group hover:ring-foreground/20 flex cursor-pointer flex-row items-center justify-between gap-4 p-5 transition-all hover:shadow-md"
                 onClick={() => router.push(`/applications/${app.id}`)}
               >
                 <div className="min-w-0">
                   <p className="truncate font-medium">{app.company}</p>
-                  <p className="truncate text-sm text-muted-foreground">
+                  <p className="text-muted-foreground truncate text-sm">
                     {app.role}
                   </p>
                 </div>
@@ -160,31 +159,37 @@ export default function ApplicationsPage() {
 
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button 
-                      onClick={(e) => e.stopPropagation()}
-                      variant="ghost" size="icon-sm" 
-                      className="text-muted-foreground hover:text-destructive">
+                      <Button
+                        onClick={(e) => e.stopPropagation()}
+                        variant="ghost"
+                        size="icon-sm"
+                        className="text-muted-foreground hover:text-destructive"
+                      >
                         <Trash2Icon />
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent onClick={(e) => e.stopPropagation()}>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Delete this application?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                          Delete this application?
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
-                          This will permanently remove this
-                          application. This can&apos;t be undone.
+                          This will permanently remove this application. This
+                          can&apos;t be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => deleteMutation.mutate(app.id)}>
+                        <AlertDialogAction
+                          onClick={() => deleteMutation.mutate(app.id)}
+                        >
                           Delete
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
 
-                  <ChevronRightIcon className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                  <ChevronRightIcon className="text-muted-foreground size-4 transition-transform group-hover:translate-x-0.5" />
                 </div>
               </Card>
             ))}

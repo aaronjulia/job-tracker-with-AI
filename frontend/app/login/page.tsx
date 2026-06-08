@@ -31,15 +31,15 @@ export default function LoginPage() {
   return (
     <div className="relative flex min-h-screen flex-1 items-center justify-center px-4">
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-32 left-1/2 size-[32rem] -translate-x-1/2 rounded-full bg-primary/5 blur-3xl" />
+        <div className="bg-primary/5 absolute -top-32 left-1/2 size-[32rem] -translate-x-1/2 rounded-full blur-3xl" />
       </div>
 
       <div className="w-full max-w-sm">
         <Link
           href="/"
-          className="mb-8 flex items-center justify-center gap-2 font-heading text-lg font-semibold tracking-tight"
+          className="font-heading mb-8 flex items-center justify-center gap-2 text-lg font-semibold tracking-tight"
         >
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <span className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-lg">
             <BriefcaseIcon className="size-4" />
           </span>
           Job Tracker
@@ -50,7 +50,7 @@ export default function LoginPage() {
             <h1 className="font-heading text-2xl font-semibold tracking-tight">
               Welcome back
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Log in to your job tracker
             </p>
           </div>
@@ -81,7 +81,7 @@ export default function LoginPage() {
             </div>
 
             {loginMutation.isError && (
-              <p className="flex items-center gap-1.5 text-sm text-destructive">
+              <p className="text-destructive flex items-center gap-1.5 text-sm">
                 <AlertCircleIcon className="size-4" />
                 {loginMutation.error.message}
               </p>
@@ -100,15 +100,15 @@ export default function LoginPage() {
 
         <Link
           href="/create"
-          className="mt-6 block text-center text-sm text-muted-foreground"
+          className="text-muted-foreground mt-6 block text-center text-sm"
         >
-          Don't have an account?{" "}
-          <span className="font-semibold text-primary hover:text-primary/80 hover:underline">
+          Don&apos;t have an account?{" "}
+          <span className="text-primary hover:text-primary/80 font-semibold hover:underline">
             Create one
           </span>
         </Link>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">
+        <p className="text-muted-foreground mt-6 text-center text-xs">
           Track every role in one calm, organized place.
         </p>
       </div>

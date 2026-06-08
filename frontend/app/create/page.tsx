@@ -17,8 +17,8 @@ export default function CreateAccount() {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
 
-
-  {/*
+  {
+    /*
     class UserCreate(BaseModel):
         email: EmailStr
         name: str
@@ -33,15 +33,14 @@ export default function CreateAccount() {
 
         model_config = ConfigDict(from_attributes=True)
     */
-   }
+  }
   const createAccountMutation = useMutation({
     mutationFn: () => api.post("/users", { email, name, password }),
     onSuccess: () => {
-
-        //login to get the token, save it, then navigate
-        login(email, password).then(() => {
-          router.push("/applications");
-        });
+      //login to get the token, save it, then navigate
+      login(email, password).then(() => {
+        router.push("/applications");
+      });
     },
   });
 
@@ -53,15 +52,15 @@ export default function CreateAccount() {
   return (
     <div className="relative flex min-h-screen flex-1 items-center justify-center px-4">
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-32 left-1/2 size-[32rem] -translate-x-1/2 rounded-full bg-primary/5 blur-3xl" />
+        <div className="bg-primary/5 absolute -top-32 left-1/2 size-[32rem] -translate-x-1/2 rounded-full blur-3xl" />
       </div>
 
       <div className="w-full max-w-sm">
         <Link
           href="/"
-          className="mb-8 flex items-center justify-center gap-2 font-heading text-lg font-semibold tracking-tight"
+          className="font-heading mb-8 flex items-center justify-center gap-2 text-lg font-semibold tracking-tight"
         >
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <span className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-lg">
             <BriefcaseIcon className="size-4" />
           </span>
           Job Tracker
@@ -72,8 +71,9 @@ export default function CreateAccount() {
             <h1 className="font-heading text-2xl font-semibold tracking-tight">
               Welcome
             </h1>
-            <p className="text-sm text-muted-foreground">
-              Create account to track your job applications and land your next role.
+            <p className="text-muted-foreground text-sm">
+              Create account to track your job applications and land your next
+              role.
             </p>
           </div>
 
@@ -115,7 +115,7 @@ export default function CreateAccount() {
             </div>
 
             {createAccountMutation.isError && (
-              <p className="flex items-center gap-1.5 text-sm text-destructive">
+              <p className="text-destructive flex items-center gap-1.5 text-sm">
                 <AlertCircleIcon className="size-4" />
                 {createAccountMutation.error.message}
               </p>
@@ -127,12 +127,14 @@ export default function CreateAccount() {
               className="h-10 w-full"
               disabled={createAccountMutation.isPending}
             >
-              {createAccountMutation.isPending ? "Creating account…" : "Create account"}
+              {createAccountMutation.isPending
+                ? "Creating account…"
+                : "Create account"}
             </Button>
           </form>
         </Card>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">
+        <p className="text-muted-foreground mt-6 text-center text-xs">
           Track every role in one calm, organized place.
         </p>
       </div>

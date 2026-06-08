@@ -13,7 +13,10 @@ const STYLES: Record<ApplicationStatus, string> = {
 
 export function StatusBadge({ status }: { status: ApplicationStatus }) {
   return (
-    <Badge variant="outline" className={`${STYLES[status]} capitalize font-medium`}>
+    <Badge
+      variant="outline"
+      className={`${STYLES[status]} font-medium capitalize`}
+    >
       {status}
     </Badge>
   );
