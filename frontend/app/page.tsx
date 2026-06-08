@@ -64,7 +64,7 @@ export default function Home() {
 
         <div className="mt-10 flex flex-col gap-3 sm:flex-row">
           <Button asChild size="lg" className="h-11 px-6 text-sm">
-            <Link href="/login">
+            <Link href="/create">
               Get started
               <ArrowRightIcon className="size-4" />
             </Link>

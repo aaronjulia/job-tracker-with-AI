@@ -5,12 +5,15 @@ import { Application } from "@/lib/types";
 import { useRequireAuth } from "@/lib/useRequireAuth";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
+import { useState } from "react";
 import Link from "next/link";
 import ContactsSection from "./ContactsSection";
 import InteractionSection from "./InteractionSection";
-import { StatusBadge } from "../StatusBadge";
+import { StatusSelect } from "./StatusSelect";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import EditApplicationDialog from "./EditApplicationDialog";
 import {
   ArrowLeftIcon,
   CalendarIcon,
@@ -18,6 +21,10 @@ import {
   BanknoteIcon,
   CompassIcon,
   AlertCircleIcon,
+  FileTextIcon,
+  GraduationCapIcon,
+  BriefcaseIcon,
+  PencilIcon,
 } from "lucide-react";
 
 function formatSalary(min: number | null, max: number | null) {
@@ -27,9 +34,20 @@ function formatSalary(min: number | null, max: number | null) {
   return fmt((min ?? max) as number);
 }
 
+function formatAppliedDate(value: string) {
+  // Parse the calendar date in local time to avoid the UTC-midnight off-by-one.
+  const [year, month, day] = value.substring(0, 10).split("-").map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 export default function ApplicationPage() {
   const isAuthenticated = useRequireAuth();
   const { id } = useParams<{ id: string }>();
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["application", id],
@@ -71,23 +89,36 @@ export default function ApplicationPage() {
                 </h1>
                 <p className="mt-1 text-muted-foreground">{data?.role}</p>
               </div>
-              {data && <StatusBadge status={data.status} />}
+              {data && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditOpen(true)}
+                  >
+                    <PencilIcon />
+                    Edit
+                  </Button>
+                  <StatusSelect applicationId={id} status={data.status} />
+                </div>
+              )}
             </div>
+
+
+            {data && (
+              <EditApplicationDialog
+                open={isEditOpen}
+                onClose={() => setIsEditOpen(false)}
+                application={data}
+              />
+            )}
 
             <Card className="mb-8 p-6">
               <dl className="grid gap-5 sm:grid-cols-2">
                 <Detail
                   icon={<CalendarIcon className="size-4" />}
                   label="Applied"
-                  value={
-                    data?.applied_at
-                      ? new Date(data.applied_at).toLocaleDateString(undefined, {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })
-                      : "—"
-                  }
+                  value={data?.applied_at ? formatAppliedDate(data.applied_at) : "—"}
                 />
                 <Detail
                   icon={<CompassIcon className="size-4" />}
@@ -121,6 +152,56 @@ export default function ApplicationPage() {
               </dl>
             </Card>
 
+            {data?.extracted_requirements && (
+              <section className="mb-8">
+                <h2 className="mb-3 flex items-center gap-2 font-heading text-lg font-semibold">
+                  <FileTextIcon className="size-4.5 text-muted-foreground" />
+                  Job Details
+                </h2>
+                <Card className="space-y-6 p-6">
+                  <dl className="grid gap-5 sm:grid-cols-2">
+                    <Detail
+                      icon={<GraduationCapIcon className="size-4" />}
+                      label="Education"
+                      value={data.extracted_requirements.education || "—"}
+                    />
+                    <Detail
+                      icon={<BriefcaseIcon className="size-4" />}
+                      label="Experience"
+                      value={data.extracted_requirements.years_experience || "—"}
+                    />
+                  </dl>
+
+                  <SkillGroup
+                    label="Required skills"
+                    items={data.extracted_requirements.required_skills}
+                    variant="secondary"
+                  />
+                  <SkillGroup
+                    label="Preferred skills"
+                    items={data.extracted_requirements.preferred_skills}
+                    variant="outline"
+                  />
+
+                  {data.extracted_requirements.responsibilities.length > 0 && (
+                    <div>
+                      <h3 className="mb-2 text-xs font-medium text-muted-foreground">
+                        Responsibilities
+                      </h3>
+                      <ul className="space-y-1.5">
+                        {data.extracted_requirements.responsibilities.map((item, i) => (
+                          <li key={i} className="flex gap-2.5 text-sm">
+                            <span className="mt-2 size-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </Card>
+              </section>
+            )}
+
             <div className="space-y-8">
               <ContactsSection applicationId={id} />
               <InteractionSection applicationId={id} />
@@ -149,6 +230,30 @@ function Detail({
       <div className="min-w-0">
         <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
         <dd className="mt-0.5 truncate text-sm font-medium">{value}</dd>
+      </div>
+    </div>
+  );
+}
+
+function SkillGroup({
+  label,
+  items,
+  variant,
+}: {
+  label: string;
+  items: string[];
+  variant: "secondary" | "outline";
+}) {
+  if (!items || items.length === 0) return null;
+  return (
+    <div>
+      <h3 className="mb-2 text-xs font-medium text-muted-foreground">{label}</h3>
+      <div className="flex flex-wrap gap-1.5">
+        {items.map((item, i) => (
+          <Badge key={i} variant={variant} className="h-6 px-2.5">
+            {item}
+          </Badge>
+        ))}
       </div>
     </div>
   );

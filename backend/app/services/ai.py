@@ -30,7 +30,7 @@ def extract_application_draft(job_description: str) -> ApplicationDraft:
                         "- role (string or null)\n"
                         "- salary_min (integer or null)\n"
                         "- salary_max (integer or null)\n"
-                        "- requirements (object with: required_skills [string array], "
+                        "- extracted_requirements (object with: required_skills [string array], "
                         "preferred_skills [string array], years_experience [string or null], "
                         "education [string or null], responsibilities [string array], "
                         "keywords [string array])\n"

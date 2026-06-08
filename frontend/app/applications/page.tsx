@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { Application } from "@/lib/types";
 import AddApplicationForm from "./AddApplicationForm";
@@ -18,7 +18,20 @@ import {
   XIcon,
   ChevronRightIcon,
   AlertCircleIcon,
+  Trash2Icon,
 } from "lucide-react";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function ApplicationsPage() {
   const isAuthenticated = useRequireAuth();
@@ -27,6 +40,16 @@ export default function ApplicationsPage() {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["applications"],
     queryFn: () => api.get<Application[]>("/applications"),
+  });
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: (appId: string) => api.delete(`/applications/${appId}`),
+    onSuccess: () => {
+
+      queryClient.invalidateQueries({ queryKey: ["applications"] });
+      router.refresh(); // Refresh the list after deletion
+    },
   });
 
   if (!isAuthenticated) return null; // or a loading state while redirecting
@@ -134,6 +157,33 @@ export default function ApplicationsPage() {
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
                   <StatusBadge status={app.status} />
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                      onClick={(e) => e.stopPropagation()}
+                      variant="ghost" size="icon-sm" 
+                      className="text-muted-foreground hover:text-destructive">
+                        <Trash2Icon />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete this application?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently remove this
+                          application. This can&apos;t be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => deleteMutation.mutate(app.id)}>
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+
                   <ChevronRightIcon className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                 </div>
               </Card>

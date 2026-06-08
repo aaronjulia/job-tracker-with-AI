@@ -74,6 +74,7 @@ export async function login(email: string, password: string): Promise<string> {
   }
 
   const data = await res.json();
+  localStorage.setItem("token", data.access_token);
   return data.access_token as string; // returns the JWT
 }
 

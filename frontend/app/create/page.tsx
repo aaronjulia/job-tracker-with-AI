@@ -4,28 +4,50 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
-import { login } from "@/lib/api";
+import { api, login } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { BriefcaseIcon, AlertCircleIcon } from "lucide-react";
 
-export default function LoginPage() {
+export default function CreateAccount() {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
 
-  const loginMutation = useMutation({
-    mutationFn: () => login(email, password),
+
+  {/*
+    class UserCreate(BaseModel):
+        email: EmailStr
+        name: str
+        password: str
+
+
+    class UserOut(BaseModel):
+        id: uuid.UUID
+        email: EmailStr
+        name: str
+        created_at: datetime
+
+        model_config = ConfigDict(from_attributes=True)
+    */
+   }
+  const createAccountMutation = useMutation({
+    mutationFn: () => api.post("/users", { email, name, password }),
     onSuccess: () => {
-      router.push("/applications");
+
+        //login to get the token, save it, then navigate
+        login(email, password).then(() => {
+          router.push("/applications");
+        });
     },
   });
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    loginMutation.mutate();
+    createAccountMutation.mutate();
   }
 
   return (
@@ -48,10 +70,10 @@ export default function LoginPage() {
         <Card className="p-8">
           <div className="mb-6 space-y-1 text-center">
             <h1 className="font-heading text-2xl font-semibold tracking-tight">
-              Welcome back
+              Welcome
             </h1>
             <p className="text-sm text-muted-foreground">
-              Log in to your job tracker
+              Create account to track your job applications and land your next role.
             </p>
           </div>
 
@@ -69,6 +91,18 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="John Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
@@ -80,10 +114,10 @@ export default function LoginPage() {
               />
             </div>
 
-            {loginMutation.isError && (
+            {createAccountMutation.isError && (
               <p className="flex items-center gap-1.5 text-sm text-destructive">
                 <AlertCircleIcon className="size-4" />
-                {loginMutation.error.message}
+                {createAccountMutation.error.message}
               </p>
             )}
 
@@ -91,22 +125,12 @@ export default function LoginPage() {
               type="submit"
               size="lg"
               className="h-10 w-full"
-              disabled={loginMutation.isPending}
+              disabled={createAccountMutation.isPending}
             >
-              {loginMutation.isPending ? "Logging in…" : "Log in"}
+              {createAccountMutation.isPending ? "Creating account…" : "Create account"}
             </Button>
           </form>
         </Card>
-
-        <Link
-          href="/create"
-          className="mt-6 block text-center text-sm text-muted-foreground"
-        >
-          Don't have an account?{" "}
-          <span className="font-semibold text-primary hover:text-primary/80 hover:underline">
-            Create one
-          </span>
-        </Link>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
           Track every role in one calm, organized place.
