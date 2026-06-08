@@ -7,6 +7,11 @@ from app.database import Base, get_db
 from app import models  # noqa: F401 - registers tables on Base.metadata
 from main import app
 from app.config import settings
+from app.limiter import limiter
+
+# Rate limiting would otherwise trip across the many requests a test run makes
+# from a single client, so turn it off for the suite.
+limiter.enabled = False
 
 engine = create_engine(settings.TEST_DB_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -8,12 +8,14 @@ from app.schemas import UserCreate, UserOut
 from app.security import hash_password
 
 from app.dependencies import get_current_user
+from app.limiter import limiter
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.post("/", response_model=UserOut, status_code=status.HTTP_201_CREATED)
-def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
+@limiter.limit("10/hour")
+def create_user(request: Request, user_in: UserCreate, db: Session = Depends(get_db)):
     existing_user = db.execute(
         select(User).where(User.email == user_in.email)
     ).scalar_one_or_none()

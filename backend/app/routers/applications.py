@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from pytest import Session
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from sqlalchemy.orm import Session
 from sqlalchemy import select
 import uuid
 
@@ -9,6 +9,7 @@ from app.schemas import CoverLetterRequest, CoverLetterResponse
 from app.database import get_db
 from app.models import Contact, Interaction, User, Application
 from app.dependencies import get_current_user, get_user_application
+from app.limiter import limiter
 from app.schemas import (
     ApplicationOut,
     ApplicationCreate,
@@ -346,7 +347,9 @@ def update_application_interaction(
 
 
 @router.post("/extract", response_model=ApplicationDraft)
+@limiter.limit("10/minute;100/day")
 def extract_application(
+    request: Request,
     body: ParseJDRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -360,7 +363,9 @@ def extract_application(
 
 
 @router.post("/{application_id}/cover-letter", response_model=CoverLetterResponse)
+@limiter.limit("10/minute;100/day")
 def cover_letter(
+    request: Request,
     body: CoverLetterRequest,
     application: Application = Depends(get_user_application),
     db: Session = Depends(get_db),
