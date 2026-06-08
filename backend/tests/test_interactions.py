@@ -41,6 +41,16 @@ def test_create_interaction(client, auth_headers, application_id):
     assert listed[0]["notes"] == "Phone screen scheduled"
 
 
+def test_create_interaction_persists_occurred_at(client, auth_headers, application_id):
+    response = _create_interaction(
+        client, auth_headers, application_id, occurred_at="2026-01-15T09:30:00"
+    )
+    assert response.status_code == 201
+
+    interaction = _list_interactions(client, auth_headers, application_id)[0]
+    assert interaction["occurred_at"].startswith("2026-01-15T09:30:00")
+
+
 def test_get_interaction(client, auth_headers, application_id):
     _create_interaction(client, auth_headers, application_id)
     interaction = _list_interactions(client, auth_headers, application_id)[0]

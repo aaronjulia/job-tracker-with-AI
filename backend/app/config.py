@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7
     TEST_DB_URL: str | None = None
     OPENAI_API_KEY: str
+    # Comma-separated list of allowed CORS origins (set the deployed frontend URL in prod).
+    CORS_ORIGINS: str = "http://localhost:3000"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

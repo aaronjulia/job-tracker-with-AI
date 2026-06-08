@@ -73,7 +73,7 @@ export default function InteractionModal({
       api.post(`/applications/${applicationId}/interactions`, {
         type,
         notes,
-        occurred_at,
+        occurred_at: occurred_at || null,
       }),
     onSuccess,
   });
@@ -85,7 +85,7 @@ export default function InteractionModal({
         {
           type,
           notes,
-          occurred_at,
+          occurred_at: occurred_at || null,
         },
       ),
     onSuccess,

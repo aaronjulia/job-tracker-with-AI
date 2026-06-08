@@ -285,6 +285,9 @@ def add_application_interaction(
         type=interaction_data.type,
         notes=interaction_data.notes,
     )
+    # Only set occurred_at when provided so the column's server default applies otherwise.
+    if interaction_data.occurred_at is not None:
+        new_interaction.occurred_at = interaction_data.occurred_at
     db.add(new_interaction)
     db.commit()
     db.refresh(new_interaction)
@@ -333,6 +336,9 @@ def update_application_interaction(
         )
     update_fields = interaction_data.model_dump(exclude_unset=True)
     for field, value in update_fields.items():
+        # occurred_at is non-nullable; skip it when null rather than clearing it.
+        if field == "occurred_at" and value is None:
+            continue
         setattr(interaction, field, value)
     db.commit()
     db.refresh(interaction)

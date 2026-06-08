@@ -129,6 +129,7 @@ class ContactUpdate(BaseModel):
 class InteractionCreate(BaseModel):
     type: str
     notes: str | None = None
+    occurred_at: datetime | None = None
 
 
 class InteractionOut(BaseModel):
@@ -142,3 +143,4 @@ class InteractionOut(BaseModel):
 class InteractionUpdate(BaseModel):
     type: str | None = None
     notes: str | None = None
+    occurred_at: datetime | None = None
