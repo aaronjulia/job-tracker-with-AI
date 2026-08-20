@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend
 
-## Getting Started
+React 19 + TypeScript on Vite, with Tailwind v4, shadcn/ui, React Router, and TanStack Query.
 
-First, run the development server:
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:5173](http://localhost:5173).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Vite only exposes vars prefixed with `VITE_`, and inlines them **at build time** —
+rebuild after changing one.
 
-## Learn More
+| Variable       | Default                 | Purpose                |
+| -------------- | ----------------------- | ---------------------- |
+| `VITE_API_URL` | `http://localhost:8000` | FastAPI backend origin |
 
-To learn more about Next.js, take a look at the following resources:
+Put local overrides in `frontend/.env.local` (gitignored):
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+VITE_API_URL=http://localhost:8000
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Scripts
 
-## Deploy on Vercel
+| Script            | Does                                        |
+| ----------------- | ------------------------------------------- |
+| `npm run dev`     | Dev server with HMR                         |
+| `npm run build`   | Typecheck (`tsc -b`) then bundle to `dist/` |
+| `npm run preview` | Serve the built bundle locally              |
+| `npm run lint`    | oxlint                                      |
+| `npm run format`  | Prettier write                              |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Layout
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+  main.tsx          entry — Providers > BrowserRouter > App
+  App.tsx           route table
+  providers.tsx     TanStack Query client
+  index.css         Tailwind entry + design tokens
+  lib/              api client, types, auth hook, cn()
+  components/ui/    shadcn primitives
+  pages/            one folder per route area
+```
+
+Routing is client-side, so any host serving `dist/` must fall back to
+`index.html` for unknown paths — see `nginx.conf` for how the container does it.

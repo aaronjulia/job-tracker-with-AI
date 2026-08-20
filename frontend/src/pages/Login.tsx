@@ -1,0 +1,114 @@
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
+import { login } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import { BriefcaseIcon, AlertCircleIcon } from "lucide-react";
+
+export default function LoginPage() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const loginMutation = useMutation({
+    mutationFn: () => login(email, password),
+    onSuccess: () => {
+      navigate("/applications");
+    },
+  });
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    loginMutation.mutate();
+  }
+
+  return (
+    <div className="relative flex min-h-screen flex-1 items-center justify-center px-4">
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div className="bg-primary/5 absolute -top-32 left-1/2 size-[32rem] -translate-x-1/2 rounded-full blur-3xl" />
+      </div>
+
+      <div className="w-full max-w-sm">
+        <Link
+          to="/"
+          className="font-heading mb-8 flex items-center justify-center gap-2 text-lg font-semibold tracking-tight"
+        >
+          <span className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-lg">
+            <BriefcaseIcon className="size-4" />
+          </span>
+          Job Tracker
+        </Link>
+
+        <Card className="p-8">
+          <div className="mb-6 space-y-1 text-center">
+            <h1 className="font-heading text-2xl font-semibold tracking-tight">
+              Welcome back
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              Log in to your job tracker
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            {loginMutation.isError && (
+              <p className="text-destructive flex items-center gap-1.5 text-sm">
+                <AlertCircleIcon className="size-4" />
+                {loginMutation.error.message}
+              </p>
+            )}
+
+            <Button
+              type="submit"
+              size="lg"
+              className="h-10 w-full"
+              disabled={loginMutation.isPending}
+            >
+              {loginMutation.isPending ? "Logging in…" : "Log in"}
+            </Button>
+          </form>
+        </Card>
+
+        <Link
+          to="/create"
+          className="text-muted-foreground mt-6 block text-center text-sm"
+        >
+          Don&apos;t have an account?{" "}
+          <span className="text-primary hover:text-primary/80 font-semibold hover:underline">
+            Create one
+          </span>
+        </Link>
+
+        <p className="text-muted-foreground mt-6 text-center text-xs">
+          Track every role in one calm, organized place.
+        </p>
+      </div>
+    </div>
+  );
+}
