@@ -1,0 +1,7 @@
+jobvault.app {
+	reverse_proxy frontend:8080
+}
+
+api.jobvault.app {
+	reverse_proxy backend:8000
+}

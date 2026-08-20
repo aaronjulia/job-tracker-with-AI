@@ -34,7 +34,9 @@ services:
       # Must match the origin the browser loads the frontend from.
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
     ports:
-      - "${BACKEND_PORT:-8000}:8000"
+      # Loopback only — Caddy reaches this over the internal Docker network by
+      # service name, so it never needs to be exposed on the public interface.
+      - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -61,10 +63,30 @@ services:
         VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
     restart: unless-stopped
     ports:
-      - "${FRONTEND_PORT:-3000}:8080"
+      # Loopback only — same reasoning as backend, above.
+      - "127.0.0.1:${FRONTEND_PORT:-3000}:8080"
     depends_on:
       backend:
         condition: service_healthy
 
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp" # HTTP/3
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+
 volumes:
   pgdata:
+  caddy_data:
+  caddy_config:
