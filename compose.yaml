@@ -40,9 +40,14 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    # --forwarded-allow-ips='*' trusts Caddy's X-Forwarded-Proto so redirects
+    # (e.g. FastAPI's trailing-slash redirect) build as https://, not http://.
+    # Safe here because this port is loopback-only — nothing but Caddy and the
+    # host itself can ever reach uvicorn directly.
     command: >
       sh -c "uv run alembic upgrade head &&
-             uv run uvicorn main:app --host 0.0.0.0 --port 8000"
+             uv run uvicorn main:app --host 0.0.0.0 --port 8000
+             --proxy-headers --forwarded-allow-ips='*'"
     healthcheck:
       test:
         - CMD
